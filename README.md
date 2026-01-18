@@ -25,7 +25,7 @@ A lightweight, single-file HTML5 application for creating, managing, and visuali
 
 ## 🚀 How to Use
 
-1. **Download**: Download `Family_Tree_1.0_CHN.html`.
+1. **Download**: Download `Family_Tree_CHN.html`.
 2. **Open**: Double-click the file to open it in Chrome, Edge, Firefox, or Safari.
 3. **Start Creating**:
    - The app loads with sample data. Click "Initialize" (初始化) to reset or reload sample data.
@@ -90,7 +90,7 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## 🚀 使い方
 
-1. **ダウンロード**: `Family_Tree_1.0_CHN.html` をダウンロードします。
+1. **ダウンロード**: `Family_Tree_CHN.html` をダウンロードします。
 2. **開く**: ファイルをダブルクリックして、Chrome, Edge, Firefox, Safariなどのブラウザで開きます。
 3. **作成開始**:
    - 初期状態ではサンプルデータが表示されます。「初期化 (初始化)」ボタンでリセット可能です。
@@ -144,7 +144,7 @@ Excelで家系図データを管理し、インポートすることができま
 
 ## 🚀 如何使用
 
-1. **下載**: 下載 `Family_Tree_1.0_CHN.html`。
+1. **下載**: 下載 `Family_Tree_CHN.html`。
 2. **打開**: 雙擊文件以在 Chrome、Edge、Firefox 或 Safari 中打開。
 3. **開始創建**:
    - 應用加載時會顯示示例數據。點擊「初始化」可重置或重新加載示例數據。
@@ -173,3 +173,5 @@ Excelで家系図データを管理し、インポートすることができま
 
 ---
 *Created by Antigravity*
+
+# [Start Application / 應用程式啟動 / アプリ起動](Family_Tree_CHN.html)
