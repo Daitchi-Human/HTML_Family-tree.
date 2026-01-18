@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FamilyTreeJS 使用說明書</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        .instruction-img {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="max-w-4xl mx-auto px-4 py-12">
+        <div class="mb-8">
+            <a href="index.html" class="text-blue-600 hover:text-blue-800 font-medium">← 返回首頁</a>
+        </div>
+
+        <h1 class="text-4xl font-bold mb-4 text-gray-900">FamilyTreeJS 使用說明書</h1>
+        <p class="text-xl text-gray-600 mb-12">本手冊將詳細說明如何使用 FamilyTreeJS 創建、編輯和管理您的家系圖。</p>
+
+        <div class="bg-white shadow-lg rounded-xl p-8 mb-12">
+            <h2 class="text-2xl font-bold mb-4 text-blue-600 border-b pb-2">目錄</h2>
+            <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                <li><a href="#getting-started" class="hover:underline hover:text-blue-600">1. 開始使用</a></li>
+                <li><a href="#editing" class="hover:underline hover:text-blue-600">2. 編輯節點</a></li>
+                <li><a href="#relationships" class="hover:underline hover:text-blue-600">3. 建立關係 (父母/配偶/子女)</a></li>
+                <li><a href="#view-modes" class="hover:underline hover:text-blue-600">4. 顯示模式與外觀</a></li>
+                <li><a href="#import-export" class="hover:underline hover:text-blue-600">5. 導入與導出 (Excel/圖片/PDF)</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- 1. Getting Started -->
+        <section id="getting-started" class="mb-16">
+            <h2 class="text-3xl font-bold mb-6 text-gray-900 flex items-center">
+                <span
+                    class="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl mr-4">1</span>
+                開始使用
+            </h2>
+            <div class="prose max-w-none text-gray-700">
+                <p class="mb-4">
+                    只需下載 <code>Family_Tree_CHN.html</code> 並在瀏覽器中開啟即可。首次開啟時，系統會加載一份範例數據。
+                </p>
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                    <p class="font-bold">提示：</p>
+                    <p>您可以點擊工具列上的「初始化」按鈕來重置數據，變回預設的範例狀態。請注意，這將會清除您當前所做的所有更改。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. Editing -->
+        <section id="editing" class="mb-16">
+            <h2 class="text-3xl font-bold mb-6 text-gray-900 flex items-center">
+                <span
+                    class="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl mr-4">2</span>
+                編輯節點
+            </h2>
+            <div class="prose max-w-none text-gray-700">
+                <p class="mb-4">
+                    點擊畫面上的任意人物卡片，會彈出一個編輯視窗。在此視窗中，您可以修改以下資訊：
+                </p>
+                <ul class="list-disc pl-5 mb-4 space-y-1">
+                    <li><strong>基本資料</strong>：姓名、性別、字、號。</li>
+                    <li><strong>生卒年月</strong>：支援西元及年號（如：明治、民國）。輸入年號會自動轉換為西元年份。</li>
+                    <li><strong>備註</strong>：可記錄生平事蹟或其他資訊。</li>
+                </ul>
+                <p>完成編輯後，點擊視窗右下角的「保存」按鈕即可。</p>
+            </div>
+        </section>
+
+        <!-- 3. Relationships -->
+        <section id="relationships" class="mb-16">
+            <h2 class="text-3xl font-bold mb-6 text-gray-900 flex items-center">
+                <span
+                    class="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl mr-4">3</span>
+                建立關係
+            </h2>
+            <div class="prose max-w-none text-gray-700">
+                <h3 class="text-xl font-bold mb-3 mt-6">新增親屬</h3>
+                <p class="mb-4">在編輯視窗中，點擊上方的「+」按鈕：</p>
+                <ul class="list-disc pl-5 mb-4 space-y-1">
+                    <li><strong>新增子女</strong>：自動建立與當前人物的親子連結。</li>
+                    <li><strong>新增配偶</strong>：建立婚姻關係。</li>
+                    <li><strong>新增父母</strong>：建立上一代的連結。</li>
+                </ul>
+
+                <h3 class="text-xl font-bold mb-3 mt-6">調整關係 (拖放操作)</h3>
+                <p class="mb-4">您可以直接在畫面上拖曳人物卡片來改變關係：</p>
+                <ul class="list-disc pl-5 mb-4 space-y-1">
+                    <li><strong>指定父母</strong>：按住滑鼠左鍵拖曳人物 A 到人物 B 身上，系統會詢問是否將 A 設為 B 的子女。</li>
+                    <li><strong>指定配偶</strong>：若需連結現有的兩個人物為配偶，請使用「設定」中的 ID 手動關聯功能 (進階)。</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 4. View Modes -->
+        <section id="view-modes" class="mb-16">
+            <h2 class="text-3xl font-bold mb-6 text-gray-900 flex items-center">
+                <span
+                    class="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl mr-4">4</span>
+                顯示模式與外觀
+            </h2>
+            <div class="prose max-w-none text-gray-700">
+                <p class="mb-4">
+                    工具列提供了多種顯示選項：
+                </p>
+                <ul class="list-disc pl-5 mb-4 space-y-2">
+                    <li><strong>直書模式 (Vertical Mode)</strong>：切換至傳統直書排版，適合漢字顯示。再次點擊可切換回橫書。</li>
+                    <li><strong>主題 (Theme)</strong>：內建「標準」、「現代」、「雅致」、「王朝」等多種配色風格。</li>
+                    <li><strong>字體</strong>：可切換不同字體風格（如明體、黑體）。</li>
+                    <li><strong>日期顯示</strong>：可選擇是否顯示生卒日期。</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 5. Import & Export -->
+        <section id="import-export" class="mb-16">
+            <h2 class="text-3xl font-bold mb-6 text-gray-900 flex items-center">
+                <span
+                    class="bg-blue-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl mr-4">5</span>
+                導入與導出
+            </h2>
+            <div class="prose max-w-none text-gray-700">
+                <h3 class="text-xl font-bold mb-3 mt-6">Excel 導入/導出</h3>
+                <p class="mb-4">
+                    這是最推薦的資料備份方式。點擊「保存」可下載 <code>.xlsx</code> 文件。若要恢復資料，點擊「讀取」並選擇該文件即可。
+                </p>
+
+                <h3 class="text-xl font-bold mb-3 mt-6">圖片與 PDF 導出</h3>
+                <p class="mb-4">
+                    點擊「影像」按鈕，您可以選擇：
+                </p>
+                <ul class="list-disc pl-5 mb-4 space-y-1">
+                    <li><strong>保存為圖片 (PNG)</strong>：下載高品質家系圖圖片。</li>
+                    <li><strong>保存為 PDF</strong>：適合列印分享。</li>
+                    <li><strong>分割輸出</strong>：若家系圖過大，系統會建議分割為多張圖片，或您可以手動選擇分割輸出。</li>
+                </ul>
+            </div>
+        </section>
+
+        <div class="border-t pt-8 mt-12 text-center text-gray-500">
+            <p>&copy; 2026 FamilyTreeJS. All rights reserved.</p>
+        </div>
+    </div>
+
+</body>
+
+</html>
