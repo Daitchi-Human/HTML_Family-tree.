@@ -1,0 +1,3379 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家系圖作成 V1.00</title>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        /* --- 基本デザイン --- */
+        :root {
+            /* Default Theme (Standard) Variables */
+            --bg-color: #f0f2f5;
+            --bg-pattern: none;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "Yu Gothic", sans-serif;
+            --text-color: #333;
+            --line-color: #999;
+
+            --card-bg: #ffffff;
+            --card-border: 1px solid rgba(0, 0, 0, 0.05);
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --card-radius: 4px;
+
+            --male-color: #ffffff;
+            --male-border: 4px solid #007aff;
+            --female-color: #ffffff;
+            --female-border: 4px solid #ff2d55;
+
+            --btn-bg: #007bff;
+            --btn-text: #fff;
+        }
+
+        /* --- THEME DEFINITIONS --- */
+        .theme-standard {
+            --bg-color: #f5f5f7;
+            --line-color: #c7c7cc;
+        }
+
+        .theme-chic {
+            --bg-color: #ffffff;
+            --font-family: "Didot", "Bodoni MT", "Yu Mincho", serif;
+            --text-color: #000;
+            --line-color: #000;
+            --card-bg: #fff;
+            --card-border: 2px solid #000;
+            --card-shadow: none;
+            --card-radius: 0;
+            --male-color: #fff;
+            --male-border: 4px solid #000;
+            --female-color: #fff;
+            --female-border: 1px solid #000;
+        }
+
+        .theme-miyabi {
+            --bg-color: #fcfaf2;
+            --bg-pattern: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmNmYWYyIi8+CjxwYXRoIGQ9Ik0wIDBMNCA0Wk00IDBMMCA0WiIgc3Ryb2tlPSIjZThlNGQ5IiBzdHJva2Utd2lkdGg9IjAuNSIvPjwvc3ZnPg==');
+            --font-family: "Hina Mincho", "Yu Mincho", serif;
+            --text-color: #3e2e28;
+            --line-color: #5d4c46;
+            --card-bg: #fffcf0;
+            --card-border: 1px solid #8e7f77;
+            --card-shadow: 2px 2px 0 rgba(94, 76, 70, 0.2);
+            --card-radius: 2px;
+            --male-color: #e8ecef;
+            --male-border: 4px solid #2e4b71;
+            --female-color: #f7e6e9;
+            --female-border: 4px solid #b5495b;
+        }
+
+        .theme-dynasty {
+            --bg-color: #8a1c1c;
+            --font-family: "Kaiti SC", "STKaiti", "Yu Mincho", serif;
+            --text-color: #333;
+            --line-color: #d4af37;
+            --card-bg: #fffdf5;
+            --card-border: 2px solid #d4af37;
+            --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            --card-radius: 8px;
+            --male-color: #fff;
+            --male-border: 4px solid #b8860b;
+            --female-color: #fff;
+            --female-border: 4px solid #d4af37;
+        }
+
+        .theme-vintage {
+            --bg-color: #e3d5c5;
+            --font-family: "Courier New", monospace, serif;
+            --text-color: #4a3b2a;
+            --line-color: #5c4a35;
+            --card-bg: #f2e6d5;
+            --card-border: 1px dashed #5c4a35;
+            --card-shadow: 1px 1px 3px rgba(60, 45, 30, 0.3);
+            --card-radius: 2px;
+            --male-color: #e6dac8;
+            --male-border: 4px double #5c4a35;
+            --female-color: #e6dac8;
+            --female-border: 1px solid #5c4a35;
+        }
+
+        .theme-pop {
+            --bg-color: #fff0f5;
+            --bg-pattern: radial-gradient(#ffe4e1 15%, transparent 16%) 0 0 / 20px 20px;
+            --font-family: "M PLUS Rounded 1c", "Varela Round", sans-serif;
+            --text-color: #555;
+            --line-color: #ffa07a;
+            --card-bg: #ffffff;
+            --card-border: 3px solid #ffb6c1;
+            --card-shadow: 4px 4px 0 #ff69b4;
+            --card-radius: 15px;
+            --male-color: #e0ffff;
+            --male-border: 0;
+            --female-color: #ffe4e1;
+            --female-border: 0;
+        }
+
+        .theme-luxury {
+            --bg-color: #0f172a;
+            --font-family: "Times New Roman", serif;
+            --text-color: #1e293b;
+            --line-color: #fbbf24;
+            --card-bg: #f8fafc;
+            --card-border: 2px solid #fbbf24;
+            --card-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+            --card-radius: 2px;
+            --male-color: #f1f5f9;
+            --male-border: 4px solid #94a3b8;
+            --female-color: #fff1f2;
+            --female-border: 4px solid #fbbf24;
+        }
+
+        .theme-nature {
+            --bg-color: #f1f8e9;
+            --font-family: "Yu Mincho", serif;
+            --text-color: #2e4a33;
+            --line-color: #66bb6a;
+            --card-bg: #ffffff;
+            --card-border: 1px solid #81c784;
+            --card-shadow: 0 4px 6px rgba(46, 74, 51, 0.1);
+            --card-radius: 8px 0 8px 0;
+            --male-color: #e8f5e9;
+            --male-border: 4px solid #4caf50;
+            --female-color: #f1f8e9;
+            --female-border: 4px solid #81c784;
+        }
+
+        .theme-blueprint {
+            --bg-color: #00509d;
+            --bg-pattern: linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            --font-family: "Consolas", monospace;
+            --text-color: #e0f2fe;
+            --line-color: #ffffff;
+            --card-bg: #003f88;
+            --card-border: 1px solid #4cc9f0;
+            --card-shadow: none;
+            --card-radius: 0;
+            --male-color: #003f88;
+            --male-border: 1px solid #fff;
+            --female-color: #003f88;
+            --female-border: 1px dashed #fff;
+        }
+
+        .theme-dark {
+            --bg-color: #1a1a1a;
+            --font-family: sans-serif;
+            --text-color: #e0e0e0;
+            --line-color: #666;
+            --card-bg: #2d2d2d;
+            --card-border: 1px solid #444;
+            --card-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            --card-radius: 4px;
+            --male-color: #2d2d2d;
+            --male-border: 4px solid #177ddc;
+            --female-color: #2d2d2d;
+            --female-border: 4px solid #c41d7f;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            background-image: var(--bg-pattern);
+            background-size: 20px 20px;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: white;
+            padding: 8px 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 5px;
+            border-right: 1px solid #ddd;
+            padding-right: 10px;
+            margin-right: 5px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-group:last-child {
+            border-right: none;
+        }
+
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background: #fff;
+            font-size: 12px;
+            transition: 0.2s;
+            white-space: nowrap;
+            height: 30px;
+        }
+
+        button:hover {
+            background: #f0f0f0;
+        }
+
+        button:disabled {
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #0056b3;
+            color: white;
+            border: none;
+            font-weight: bold;
+        }
+
+        .btn-danger {
+            background: #fff5f5;
+            color: #d63384;
+            border-color: #ffc9c9;
+        }
+
+        .btn-action {
+            background: #e6f7ff;
+            color: #0056b3;
+            border-color: #91d5ff;
+        }
+
+        .btn-toggle-active {
+            background: #0056b3;
+            color: white;
+            border-color: #0056b3;
+        }
+
+        #viewport {
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            cursor: grab;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 80px;
+            box-sizing: border-box;
+        }
+
+        #viewport:active {
+            cursor: grabbing;
+        }
+
+        #content-layer {
+            transform-origin: center top;
+            transition: transform 0.1s ease-out;
+            background-color: #f0f2f5;
+            padding: 50px;
+            position: relative;
+            min-width: 100%;
+            min-height: 100%;
+        }
+
+        #tree-container {
+            position: relative;
+            width: 0;
+            height: 0;
+        }
+
+        /* --- レイアウト用クラス --- */
+
+        /* 家族グループ (絶対配置) - Flow Layout Container */
+        .family-group {
+            position: absolute;
+            white-space: nowrap;
+            /* Prevent wrap */
+            font-size: 0;
+            /* Kill inline-block gaps */
+        }
+
+        .family-group>* {
+            font-size: initial;
+            /* Restore font size */
+            vertical-align: top;
+            direction: ltr;
+            /* Reset direction for children */
+        }
+
+        /* 縦書き時 override removed - assuming L-R flow is acceptable or handled by JS */
+
+        /* 縦書き時: 配偶者を左に配置 (Main(右) <- Spouse(左)) */
+        .vertical-mode .family-group {
+            direction: rtl;
+            /* Reverse visual flow: Main on Right */
+        }
+
+        /* ノードカード (相対配置: 幅150 + pad20 + border2 = 172px) */
+        /* ノードカード (相対配置: 幅150px固定) */
+        .node-card {
+            position: relative;
+            display: inline-block;
+            /* Flow layout */
+            vertical-align: top;
+            background: var(--card-bg);
+            border: var(--card-border);
+            border-radius: var(--card-radius);
+            padding: 10px;
+            width: 170px;
+            /* Fixed Width (Increased from 150) */
+            min-width: 170px;
+            box-shadow: var(--card-shadow);
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            transition: 0.1s;
+            z-index: 5;
+            margin: 0;
+            /* No margins, spacing handled by container/symbols */
+            height: 145px;
+            /* Unified Height for Horizontal cards (match mostly tall cards) */
+            min-height: 145px;
+            /* Flex inside card is fine for centering text */
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            /* overflow: hidden; removed to show collapse button */
+            overflow: visible;
+            box-sizing: border-box;
+        }
+
+        /* --- Theme Specific Card Decorations --- */
+
+        /* Dynasty: Meander Pattern (Raiman) Frame */
+        .theme-dynasty .node-card::after {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            border: 2px solid #b8860b;
+            pointer-events: none;
+            /* Simple CSS pattern for "Raimon" look (dashed/dotted mix or multiple borders) - utilizing border-image would be best but simple SVG border is safer for single file */
+            opacity: 0.5;
+            background-image: linear-gradient(135deg, #d4af37 25%, transparent 25%), linear-gradient(225deg, #d4af37 25%, transparent 25%), linear-gradient(45deg, #d4af37 25%, transparent 25%), linear-gradient(315deg, #d4af37 25%, transparent 25%);
+            background-position: 10px 0, 10px 0, 0 0, 0 0;
+            background-size: 10px 10px;
+            background-repeat: repeat;
+            /* Mask content area to only show border */
+            -webkit-mask: linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff);
+            mask: linear-gradient(#fff, #fff) content-box, linear-gradient(#fff, #fff);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            padding: 4px;
+            /* Thickness of the frame pattern */
+            z-index: 0;
+        }
+
+        /* Miyabi: Gold dust / Cloud texture */
+        .theme-miyabi .node-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(circle, #d4af37 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .theme-miyabi .node-card {
+            border-top-width: 0 !important;
+            /* Hide default top border to use custom decoration */
+        }
+
+        .theme-miyabi .node-card.sex-male::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: #2e4b71;
+        }
+
+        .theme-miyabi .node-card.sex-female::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: #b5495b;
+        }
+
+
+        /* Vintage: Corner flourishes (CSS triangles for simplicity) */
+        .theme-vintage .node-card::before {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            right: 2px;
+            bottom: 2px;
+            border: 1px solid #5c4a35;
+            outline: 1px solid #5c4a35;
+            outline-offset: -4px;
+            pointer-events: none;
+        }
+
+        /* Pop: Polka dot background */
+        .theme-pop .node-card {
+            background-image: radial-gradient(#ffe4e1 20%, transparent 20%);
+            background-size: 10px 10px;
+        }
+
+        /* Nature: Leaf icon */
+        .theme-nature .node-card::after {
+            content: "🌿";
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        /* Blueprint: Grid */
+        .theme-blueprint .node-card {
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 10px 10px;
+        }
+
+        /* Luxury: Inner gold border */
+        .theme-luxury .node-card::after {
+            content: "";
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            bottom: 4px;
+            border: 1px solid #fbbf24;
+            pointer-events: none;
+        }
+
+        /* 縦書きモード (v27) */
+        .vertical-mode .node-card {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            width: 140px;
+            /* Increased to 140px */
+            min-width: 140px;
+            height: 240px;
+            /* Fixed Height */
+            min-height: 240px;
+            padding: 15px 10px;
+            margin: 0;
+            justify-content: flex-start;
+            /* Right Align Flow */
+            align-items: center;
+            /* Vertically Center Items */
+            gap: 5px;
+            /* Add gap between columns */
+        }
+
+        .vertical-mode .name-main {
+            margin: 0 8px;
+            letter-spacing: 2px;
+        }
+
+        .vertical-mode .dates {
+            writing-mode: horizontal-tb;
+            margin-top: auto;
+            /* Push from top */
+            margin-bottom: auto;
+            /* Push from bottom */
+            text-align: center;
+            align-self: center;
+            /* Flex alignment */
+            width: fit-content;
+            /* Don't expand */
+            font-size: 10px;
+        }
+
+        .node-card.selected {
+            border: 2px solid #ff9800;
+            box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+            z-index: 8;
+        }
+
+        .node-card:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            border-color: #888;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .node-card.dragging {
+            opacity: 0.5;
+            border: 2px dashed #333;
+        }
+
+        .node-card.drag-target {
+            border: 2px solid #ff9800;
+            background-color: #fff3e0;
+            transform: scale(1.1);
+            z-index: 20;
+        }
+
+        .name-main {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        .order-label {
+            font-size: 10px;
+            background: #eee;
+            padding: 2px 6px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 3px;
+        }
+
+        .dates {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .memo-text {
+            /* Common Reset/Base */
+            font-size: 9px;
+            color: #777;
+            background: none;
+            border: none;
+            padding: 0;
+            margin: 0;
+
+            /* Absolute Positioning to prevent layout shift */
+            position: absolute;
+            bottom: 3px;
+            left: 5%;
+            width: 90%;
+            height: 12px;
+            line-height: 12px;
+
+            /* Single line truncation */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+        }
+
+        .vertical-mode .memo-text {
+            /* Vertical Positioning: Left edge */
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+
+            bottom: auto;
+            /* Reset horizontal prop */
+            left: 4px;
+            top: 50%;
+            transform: translateY(-50%);
+            /* Center vertical */
+
+            width: 12px;
+            height: 90%;
+            /* Max height */
+
+            /* Reset horizontal styles */
+            white-space: nowrap;
+            text-align: left;
+            /* Top align in vertical */
+        }
+
+        .date-sep {
+            font-size: 8px;
+            color: #aaa;
+            margin: 2px 0;
+        }
+
+        .name-main,
+        .dates,
+        .order-label,
+        .memo-text {
+            pointer-events: none;
+        }
+
+        .sex-male {
+            background-color: var(--male-color);
+            border-top: var(--male-border);
+        }
+
+        .sex-female {
+            background-color: var(--female-color);
+            border-top: var(--female-border);
+        }
+
+        /* 婚姻記号 (=) */
+        .marriage-symbol {
+            display: inline-block;
+            /* vertical-align: middle; removed */
+            width: 20px;
+            font-size: 20px;
+            color: #999;
+            text-align: center;
+            font-weight: bold;
+            user-select: none;
+            margin: 0 15px;
+            /* position: relative; removed */
+            /* top: 40px; removed */
+        }
+
+        .family-group {
+            position: absolute;
+            white-space: nowrap;
+            font-size: 0;
+            display: flex;
+            align-items: center;
+            /* Center items vertically */
+        }
+
+        .family-group>* {
+            font-size: initial;
+            /* Restore font size for children */
+            vertical-align: top;
+        }
+
+        /* 日付表示切り替え用クラス */
+        body.hide-dates .dates,
+        body.hide-dates .vertical-dates {
+            display: none !important;
+        }
+
+        /* ミニカード (親用) */
+        .mini-parents-row {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 5px;
+            width: max-content;
+            z-index: 6;
+        }
+
+        .mini-card {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 11px;
+            min-width: 60px;
+            text-align: center;
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .mini-card:hover {
+            background: #fafafa;
+            border-color: #999;
+        }
+
+        .mini-connector {
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            width: 1px;
+            height: 10px;
+            background: #ccc;
+        }
+
+        .mini-card.sex-male {
+            border-top: 3px solid #0056b3;
+        }
+
+        .mini-card.sex-female {
+            border-top: 3px solid #d63384;
+        }
+
+        /* 線 */
+        #svg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        path.connection-line {
+            fill: none;
+            stroke: #666;
+            stroke-width: 1.5px;
+        }
+
+        path.type-adopted {
+            stroke-dasharray: 4, 4;
+        }
+
+        /* 親選択モード */
+        body.selecting-parent .node-card {
+            cursor: crosshair;
+            border: 2px dashed #0056b3;
+            opacity: 0.7;
+        }
+
+        body.selecting-parent .node-card:hover {
+            opacity: 1;
+            background: #e6f7ff;
+            transform: scale(1.1);
+        }
+
+        #mode-indicator {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            background: rgba(0, 86, 179, 0.9);
+            color: white;
+            text-align: center;
+            padding: 5px;
+            z-index: 2000;
+            display: none;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        /* モーダル */
+        #modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        #edit-modal {
+            position: relative;
+            top: 5%;
+            margin: 0 auto 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 550px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            text-align: left;
+        }
+
+        #edit-modal h3 {
+            margin-top: 0;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            color: #333;
+        }
+
+        .node-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            font-size: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 4px;
+            color: #000;
+        }
+
+        .node-details {
+            font-size: 12px;
+            line-height: 1.4;
+            color: #555;
+        }
+
+        .node-inlaws {
+            font-size: 11px;
+            margin-top: 4px;
+            color: #777;
+            border-top: 1px dotted #ccc;
+            padding-top: 2px;
+        }
+
+        .inlaw-link {
+            cursor: pointer;
+            text-decoration: underline;
+            color: #0056b3;
+        }
+
+        .inlaw-link:hover {
+            color: #f60;
+        }
+
+        .form-section {
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            background: #fafafa;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .modal-actions {
+            text-align: right;
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-select {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        .action-select button {
+            flex: 1;
+            border: none;
+            background: none;
+            border-bottom: 3px solid transparent;
+            border-radius: 0;
+            padding: 10px;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .action-select button:hover {
+            background: #f9f9f9;
+        }
+
+        .active-mode {
+            border-bottom-color: #0056b3 !important;
+            color: #0056b3 !important;
+        }
+
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            display: none;
+            z-index: 3000;
+        }
+
+        #drop-confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+        }
+
+        #drop-confirm-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+        }
+
+        #drop-confirm-content button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+        }
+
+        /* 折りたたみボタン */
+        .collapse-btn {
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #fff;
+            border: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 20;
+            color: #0056b3;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            transition: 0.2s;
+            visibility: hidden;
+        }
+
+        .node-card:hover .collapse-btn,
+        .collapse-btn.is-collapsed {
+            visibility: visible;
+        }
+
+        .collapse-btn:hover {
+            background: #e6f7ff;
+            transform: translateX(-50%) scale(1.1);
+        }
+
+        /* --- 世代ルーラー --- */
+        #generation-ruler {
+            position: fixed;
+            left: 0;
+            top: 80px;
+            bottom: 0;
+            width: 50px;
+            background: rgba(255, 255, 255, 0.7);
+            border-right: 1px solid #ccc;
+            z-index: 500;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .ruler-label {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        /* --- エクスポート用 (不具合対策) --- */
+        body.exporting * {
+            box-shadow: none !important;
+        }
+
+        body.exporting .node-card {
+            border: 1px solid #333 !important;
+            background: white !important;
+            /* 性別カラー復活: 下左右は黒1pxだが、上だけは4pxで色を許可 */
+            border-top-width: 4px !important;
+        }
+
+        body.exporting .node-card.sex-male {
+            border-top-color: #0056b3 !important;
+        }
+
+        body.exporting .node-card.sex-female {
+            border-top-color: #d63384 !important;
+        }
+
+        body.exporting .node-card.selected {
+            border: 1px solid #333 !important;
+            /* 選択状態も解除 */
+            box-shadow: none !important;
+        }
+
+        body.exporting .collapse-btn,
+        body.exporting .mini-card,
+        body.exporting .mini-parents-row,
+        /* 婚姻記号自体は残すが、それに付隨する余計なものがあれば隠す */
+        body.exporting button,
+        body.exporting .form-group,
+        body.exporting #toolbar,
+        body.exporting #generation-ruler {
+            display: none !important;
+        }
+
+        body.exporting .marriage-symbol {
+            display: block !important;
+        }
+
+        body.exporting .inlaw-link {
+            text-decoration: none !important;
+            color: #333 !important;
+            cursor: default !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="toolbar">
+        <div style="font-weight:bold; margin-right:5px;">家系圖作成 V1.00</div>
+        <div class="toolbar-group">
+            <button onclick="undo()" id="btn-undo" disabled>↶ 元に戻す</button>
+            <button onclick="redo()" id="btn-redo" disabled>↷ 先に進む</button>
+            <button onclick="renderTree()">🔄 再描画</button>
+        </div>
+        <div class="toolbar-group">
+            <input type="file" id="upload-input" accept=".xlsx, .xls" style="display:none" />
+            <button onclick="document.getElementById('upload-input').click()">📂 読込</button>
+            <button class="btn-primary" onclick="exportToExcel()">💾 保存</button>
+            <button onclick="exportToImage()">📷 画像</button>
+        </div>
+        <div class="toolbar-group">
+            <div style="font-size:11px; color:#666; margin-right:5px;">親の配置:</div>
+            <button id="align-left" onclick="setAlignment('left')">左</button>
+            <button id="align-center" onclick="setAlignment('center')" class="btn-toggle-active">中央</button>
+            <button id="align-right" onclick="setAlignment('right')">右</button>
+        </div>
+        <div class="toolbar-group">
+            <div style="font-size:11px; color:#666; margin-right:5px;">テーマ:</div>
+            <select id="theme-selector" onchange="changeTheme(this.value)"
+                style="font-size:12px; height: 30px; border-radius: 4px; border: 1px solid #ccc; margin-right: 15px;">
+                <option value="standard">標準</option>
+                <option value="chic">シック(黒白)</option>
+                <option value="miyabi">雅(和風)</option>
+                <option value="dynasty">王朝(中華)</option>
+                <option value="vintage">古文書</option>
+                <option value="pop">ポップ</option>
+                <option value="luxury">高級(紺金)</option>
+                <option value="nature">自然</option>
+                <option value="blueprint">青写真</option>
+                <option value="dark">ダーク</option>
+            </select>
+        </div>
+        <div class="toolbar-group">
+            <div style="font-size:11px; color:#666; margin-right:5px;">フォント:</div>
+            <select id="font-selector" onchange="changeFont(this.value)"
+                style="font-size:12px; height: 30px; border-radius: 4px; border: 1px solid #ccc;">
+                <option value="mincho">明朝体</option>
+                <option value="gothic">ゴシック体</option>
+                <option value="kaisho">楷書体</option>
+            </select>
+        </div>
+        <div class="toolbar-group">
+            <button onclick="exportToImage()">画像出力</button>
+            <button onclick="exportTiled('image')" style="font-size:11px">画像(分割)</button>
+            <button onclick="exportToPDF()">PDF出力</button>
+            <button onclick="exportTiled('pdf')" style="font-size:11px">PDF(分割)</button>
+            <button onclick="exportToSVG()">SVG出力</button>
+            <label style="margin-left: 10px;">
+                <input type="checkbox" id="show-dates" checked onchange="toggleDateVisibility(true)"> 生没年を表示
+            </label>
+            <span id="view-status" style="font-size:11px; color:#666;"></span>
+        </div>
+        <div style="flex-grow:1"></div>
+        <div style="font-size:10px; color:#666; margin-right:10px;">ドラッグで移動可</div>
+        <div style="font-size:10px; color:#666; margin-right:10px;">ドラッグで移動可</div>
+        <button onclick="toggleVerticalMode()" style="font-size:11px">|| 縦書き</button>
+        <button onclick="toggleDateVisibility()" id="btn-toggle-dates" style="font-size:11px">📅 生没</button>
+        <button onclick="renovateIDs()" style="font-size:11px">🆔 ID整理</button>
+        <button onclick="initSampleData()" style="font-size:11px">✨ 初期化</button>
+    </div>
+
+    <div id="mode-indicator">新しい親をクリックしてください (キャンセル: ESC)</div>
+
+    <div id="viewport">
+        <!-- 世代ルーラー -->
+        <div id="generation-ruler"></div>
+
+        <div id="content-layer">
+            <div id="tree-container"><svg id="svg-layer"></svg></div>
+        </div>
+    </div>
+
+    <div id="modal-overlay">
+        <div id="edit-modal">
+            <h3 id="modal-title">編集</h3>
+            <div class="action-select" id="mode-buttons">
+                <button onclick="setMode('child')" id="btn-mode-child">＋ 子供</button>
+                <button onclick="setMode('spouse')" id="btn-mode-spouse">＋ 配偶者</button>
+                <button onclick="setMode('edit')" id="btn-mode-edit">✎ 編集</button>
+            </div>
+            <div id="form-content"></div>
+            <div class="modal-actions">
+                <div id="modal-left-actions" style="display:flex; gap:10px; flex-wrap:wrap;"></div>
+                <div>
+                    <button onclick="closeModal()">キャンセル</button>
+                    <button class="btn-primary" onclick="saveChanges()">決定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="drop-confirm-modal">
+        <div id="drop-confirm-content">
+            <h3>移動確認</h3>
+            <p id="drop-msg"></p>
+            <button class="btn-primary" onclick="confirmDrop('child')">この人の子供にする</button>
+            <button class="btn-primary" onclick="confirmDrop('spouse')">この人の配偶者にする</button>
+            <button onclick="cancelDrop()">キャンセル</button>
+        </div>
+    </div>
+
+    <div id="notification"></div>
+
+    <script>
+        // --- 定数 & 変数 ---
+        const ERA_DATA = {
+            "qing": {
+                label: "清朝",
+                eras: [
+                    { name: "順治", start: 1644 },
+                    { name: "康熙", start: 1662 },
+                    { name: "雍正", start: 1723 },
+                    { name: "乾隆", start: 1736 },
+                    { name: "嘉慶", start: 1796 },
+                    { name: "道光", start: 1821 },
+                    { name: "咸豊", start: 1851 },
+                    { name: "同治", start: 1862 },
+                    { name: "光緒", start: 1875 },
+                    { name: "宣統", start: 1909 }
+                ]
+            },
+            "japan": {
+                label: "日本",
+                eras: [
+                    { name: "天保", start: 1830 },
+                    { name: "弘化", start: 1844 },
+                    { name: "嘉永", start: 1848 },
+                    { name: "安政", start: 1854 },
+                    { name: "万延", start: 1860 },
+                    { name: "文久", start: 1861 },
+                    { name: "元治", start: 1864 },
+                    { name: "慶応", start: 1865 },
+                    { name: "明治", start: 1868 },
+                    { name: "大正", start: 1912 },
+                    { name: "昭和", start: 1926 },
+                    { name: "平成", start: 1989 },
+                    { name: "令和", start: 2019 }
+                ]
+            },
+            "roc": {
+                label: "民国",
+                eras: [
+                    { name: "民国", start: 1911 },
+                    { name: "民前", start: 1912, is_minus: true }
+                ]
+            }
+        };
+
+        // レイアウト定数 (修正済み)
+        const CARD_ACTUAL_WIDTH = 170; // CSS width: 170px
+        const MARRIAGE_SYMBOL_WIDTH = 20;
+        const GAP_SIZE = 15; // gap: 15px
+        const SPOUSE_BLOCK_WIDTH = GAP_SIZE + MARRIAGE_SYMBOL_WIDTH + GAP_SIZE + CARD_ACTUAL_WIDTH;
+        const SIBLING_GAP = 50; // 兄弟間
+        const GENERATION_HEIGHT = 320; // 広めに確保 (Card Height 240 + margin 80)
+        const CARD_WIDTH = 170; // CSS
+
+        let globalData = [];
+        let currentRootId = null;
+        let selectedNodeId = null;
+        let currentMode = 'edit';
+        let panState = { scale: 1, x: 0, y: 0, isDragging: false, startX: 0, startY: 0 };
+        let selectedNodeIds = new Set();
+        let isSelectingParent = false;
+        let moveSourceId = null;
+        let dragSourceId = null;
+        let pendingDropSourceId = null;
+        let pendingDropTargetId = null;
+        let historyStack = [];
+        let historyIndex = -1;
+        let parentAlignment = 'center'; // 'left', 'center', 'right'
+        let currentFont = 'mincho';
+
+        // --- Undo/Redo ---
+        function saveHistory() {
+            if (historyIndex < historyStack.length - 1) historyStack = historyStack.slice(0, historyIndex + 1);
+            historyStack.push({
+                data: JSON.parse(JSON.stringify(globalData)),
+                alignment: parentAlignment,
+                font: currentFont
+            });
+            historyIndex++;
+            updateUndoRedoButtons();
+        }
+        function undo() {
+            if (historyIndex > 0) { historyIndex--; applyHistoryState(historyStack[historyIndex]); renderTree(); updateUndoRedoButtons(); showNotification("元に戻しました"); }
+        }
+        function redo() {
+            if (historyIndex < historyStack.length - 1) { historyIndex++; applyHistoryState(historyStack[historyIndex]); renderTree(); updateUndoRedoButtons(); showNotification("先に進みました"); }
+        }
+        function applyHistoryState(state) {
+            globalData = JSON.parse(JSON.stringify(state.data));
+            parentAlignment = state.alignment || 'center';
+            currentFont = state.font || 'mincho';
+            updateAlignmentUI();
+            applyFont(currentFont);
+        }
+        function updateUndoRedoButtons() { document.getElementById('btn-undo').disabled = (historyIndex <= 0); document.getElementById('btn-redo').disabled = (historyIndex >= historyStack.length - 1); }
+        function initHistory() { historyStack = []; historyIndex = -1; saveHistory(); }
+
+        // --- Zoom & Pan ---
+        const viewport = document.getElementById('viewport');
+        const contentLayer = document.getElementById('content-layer');
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.target.closest('button') || e.target.closest('.node-card') || e.target.closest('.mini-card')) return;
+            panState.isDragging = true; panState.startX = e.clientX - panState.x; panState.startY = e.clientY - panState.y; viewport.style.cursor = 'grabbing';
+        });
+        window.addEventListener('mousemove', (e) => { if (!panState.isDragging) return; e.preventDefault(); panState.x = e.clientX - panState.startX; panState.y = e.clientY - panState.startY; updateTransform(); });
+        window.addEventListener('mouseup', () => { panState.isDragging = false; viewport.style.cursor = 'grab'; });
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const scaleAmount = -e.deltaY * 0.001;
+            const factor = (1 + scaleAmount);
+            const newScale = panState.scale * factor;
+
+            if (newScale > 0.1 && newScale < 5) {
+                // マウス位置を基準にスケーリング
+                const rect = viewport.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                // スケール変更によるコンテンツの移動量を計算
+                panState.x = mouseX - (mouseX - panState.x) * factor;
+                panState.y = mouseY - (mouseY - panState.y) * factor;
+                panState.scale = newScale;
+
+                updateTransform();
+            }
+        }, { passive: false });
+        function updateTransform() {
+            contentLayer.style.transform = `translate(${panState.x}px, ${panState.y}px) scale(${panState.scale})`;
+
+            // 世代ルーラーの追従
+            const ruler = document.getElementById('generation-ruler');
+            if (ruler) {
+                const labels = ruler.querySelectorAll('.ruler-label');
+                labels.forEach(label => {
+                    const baseY = parseFloat(label.dataset.basey);
+                    // contentLayer padding(50) + layout pos.y + card height offset(65)
+                    const screenY = (50 + baseY + 65) * panState.scale + panState.y;
+                    label.style.top = `${screenY}px`;
+                    label.style.transform = `translateY(-50%) scale(${panState.scale})`;
+                });
+            }
+        }
+        function resetView() { panState = { scale: 1, x: 0, y: 0, isDragging: false, startX: 0, startY: 0 }; updateTransform(); }
+
+        // --- UI Alignment Toggle ---
+        function setAlignment(align) {
+            saveHistory();
+            parentAlignment = align;
+            updateAlignmentUI();
+            renderTree();
+            showNotification(`配置を ${align === 'center' ? '中央' : align === 'left' ? '左寄せ' : '右寄せ'} に変更しました`);
+        }
+        function updateAlignmentUI() {
+            ['left', 'center', 'right'].forEach(a => {
+                const btn = document.getElementById(`align-${a}`);
+                if (a === parentAlignment) btn.classList.add('btn-toggle-active');
+                else btn.classList.remove('btn-toggle-active');
+            });
+        }
+
+        // --- Font Switching ---
+        function changeFont(fontType) {
+            saveHistory();
+            currentFont = fontType;
+            applyFont(fontType);
+            showNotification(`フォントを ${fontType === 'mincho' ? '明朝体' : fontType === 'gothic' ? 'ゴシック体' : '楷書体'} に変更しました`);
+        }
+        function applyFont(fontType) {
+            const selector = document.getElementById('font-selector');
+            if (selector) selector.value = fontType;
+
+            let fontStack = '"Yu Mincho", "Hiragino Mincho ProN", serif';
+            if (fontType === 'gothic') {
+                fontStack = '"Yu Gothic", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif';
+            } else if (fontType === 'kaisho') {
+                fontStack = '"HG 正楷書体-PRO", "HGP正楷書体-PRO", "HGS正楷書体-PRO", "楷書", "Kozuka Mincho Pro", serif';
+            }
+            // Override theme font by setting inline style on body
+            document.body.style.setProperty('--font-family', fontStack);
+        }
+
+        // --- Folding ---
+        function toggleCollapse(nodeId) {
+            const node = globalData.find(d => d.node_code === nodeId);
+            if (!node) return;
+
+            // ... (keeping existing collapse logic)
+            // 現在の画面内位置を記録 (追従用)
+            const el = document.getElementById(`node-${nodeId}`);
+            let screenPos = null;
+            if (el) {
+                const rect = el.getBoundingClientRect();
+                screenPos = { x: rect.left, y: rect.top };
+            }
+
+            saveHistory();
+            node.collapsed = !node.collapsed;
+            renderTree();
+
+            // 再描画後の位置調整
+            if (screenPos) {
+                setTimeout(() => {
+                    const newEl = document.getElementById(`node-${nodeId}`);
+                    if (newEl) {
+                        const newRect = newEl.getBoundingClientRect();
+                        const dx = screenPos.x - newRect.left;
+                        const dy = screenPos.y - newRect.top;
+                        panState.x += dx;
+                        panState.y += dy;
+                        updateTransform();
+                    }
+                }, 0);
+            }
+            showNotification(node.collapsed ? "折りたたみました" : "展開しました");
+        }
+
+        let isDateVisible = true;
+        function toggleDateVisibility(fromCheckbox) {
+            const checkbox = document.getElementById('show-dates');
+
+            if (fromCheckbox) {
+                isDateVisible = checkbox ? checkbox.checked : true;
+            } else {
+                // ボタンから呼ばれた場合
+                isDateVisible = !isDateVisible;
+                if (checkbox) checkbox.checked = isDateVisible;
+            }
+
+            const btn = document.getElementById('btn-toggle-dates');
+            if (isDateVisible) {
+                document.body.classList.remove('hide-dates');
+                if (btn) btn.style.opacity = '1';
+                // showNotification("生没年を表示しました"); // 頻繁に切り替えるとウザいので除去あるいは控えめに
+            } else {
+                document.body.classList.add('hide-dates');
+                if (btn) btn.style.opacity = '0.5';
+                // showNotification("生没年を非表示にしました");
+            }
+        }
+
+        function expandAll() {
+            saveHistory();
+            globalData.forEach(d => d.collapsed = false);
+            renderTree();
+            showNotification("全展開しました");
+        }
+
+
+        // --- ★レイアウト (Subtree Width) ---
+        function calculateLayout(data, rootIdFilter) {
+            const nodeMap = {}; const childrenMap = {}; const spousesMap = {};
+            data.forEach(d => { nodeMap[d.node_code] = d; if (!childrenMap[d.node_code]) childrenMap[d.node_code] = []; if (!spousesMap[d.node_code]) spousesMap[d.node_code] = []; });
+            data.forEach(d => {
+                if (d.relations.is_spouse && d.relations.spouse_linked_to) { if (spousesMap[d.relations.spouse_linked_to]) spousesMap[d.relations.spouse_linked_to].push(d); }
+                else if (d.relations.father_id) { if (childrenMap[d.relations.father_id]) childrenMap[d.relations.father_id].push(d); }
+            });
+            const isVertical = document.body.classList.contains('vertical-mode');
+            Object.keys(spousesMap).forEach(k => { spousesMap[k].sort((a, b) => (a.relations.marriage_order || 0) - (b.relations.marriage_order || 0)); });
+            Object.keys(childrenMap).forEach(k => {
+                childrenMap[k].sort((a, b) => (a.relations.birth_order || 0) - (b.relations.birth_order || 0));
+                if (isVertical) childrenMap[k].reverse();
+            });
+
+            // ★レイアウト定数の動的設定
+            // 縦書き時はカード幅と隙間を狭くする
+            const dCardWidth = isVertical ? 140 : CARD_ACTUAL_WIDTH; // 110 -> 140
+            const dSiblingGap = isVertical ? 50 : SIBLING_GAP;
+            const dSpouseBlockWidth = GAP_SIZE + MARRIAGE_SYMBOL_WIDTH + GAP_SIZE + dCardWidth;
+
+            let roots = [];
+            if (rootIdFilter) {
+                roots = [nodeMap[rootIdFilter]];
+            } else {
+                roots = data.filter(d =>
+                    !d.relations.is_spouse &&
+                    !d.relations.father_id &&
+                    !d.node_code.endsWith('_fa') &&
+                    !d.node_code.endsWith('_mo')
+                );
+            }
+            const positions = {};
+
+            function measureSubtree(nodeId) {
+                if (!nodeMap[nodeId]) return 0;
+                const node = nodeMap[nodeId];
+                const spouses = spousesMap[nodeId] || []; const children = childrenMap[nodeId] || [];
+
+                // 動的な幅を使用
+                const myGroupWidth = dCardWidth + (spouses.length * dSpouseBlockWidth);
+
+                let childrenTotalWidth = 0;
+                if (children.length > 0 && !node.collapsed) {
+                    children.forEach(c => { childrenTotalWidth += measureSubtree(c.node_code); });
+                    // 動的なギャップを使用
+                    childrenTotalWidth += (children.length - 1) * dSiblingGap;
+                }
+
+                const requiredWidth = Math.max(myGroupWidth, childrenTotalWidth);
+                positions[nodeId] = { width: requiredWidth, myGroupWidth: myGroupWidth, childrenTotalWidth: childrenTotalWidth };
+                return requiredWidth;
+            }
+            function assignCoords(nodeId, startX, startY) {
+                if (!nodeMap[nodeId]) return;
+                const node = nodeMap[nodeId];
+                const pos = positions[nodeId]; const children = childrenMap[nodeId] || [];
+                const centerX = startX + pos.width / 2;
+
+                let myLeftX;
+                if (parentAlignment === 'left') {
+                    myLeftX = centerX - pos.childrenTotalWidth / 2;
+                } else if (parentAlignment === 'right') {
+                    myLeftX = (centerX + pos.childrenTotalWidth / 2) - pos.myGroupWidth;
+                } else {
+                    myLeftX = centerX - pos.myGroupWidth / 2; // center
+                }
+
+                if (pos.childrenTotalWidth <= pos.myGroupWidth || node.collapsed) {
+                    myLeftX = centerX - pos.myGroupWidth / 2;
+                }
+
+                pos.x = myLeftX; pos.y = startY;
+                let currentChildX = centerX - pos.childrenTotalWidth / 2;
+                if (!node.collapsed) {
+                    children.forEach(c => { const cPos = positions[c.node_code]; assignCoords(c.node_code, currentChildX, startY + GENERATION_HEIGHT); currentChildX += cPos.width + dSiblingGap; });
+                }
+            }
+            let globalX = 0;
+            roots.forEach(root => { if (!root) return; const w = measureSubtree(root.node_code); assignCoords(root.node_code, globalX, 50); globalX += w + dSiblingGap * 2; });
+            return { positions, spousesMap };
+        }
+
+        // --- Theme Switching ---
+        function changeTheme(themeName) {
+            // Remove all existing theme classes
+            document.body.className = document.body.className.replace(/theme-\w+/g, "").trim();
+            // Add new theme class
+            if (themeName !== 'standard') {
+                document.body.classList.add(`theme-${themeName}`);
+            }
+
+            // Allow theme to dictate font again (reset manual override)
+            document.body.style.removeProperty('--font-family');
+
+            saveHistory(); // Save preference if needed, or just let it stay separate
+
+            // Re-render lines to pick up new color
+            renderTree();
+            showNotification(`テーマを「${themeName}」に変更しました`);
+        }
+
+        // --- 描画 ---
+        function renderTree() {
+            try {
+                // ... (existing code)
+                const layout = calculateLayout(getDisplayData(), currentRootId);
+                const posMap = layout.positions;
+                const spousesMap = layout.spousesMap; // Fixed: spousesMap definition
+                const container = document.getElementById('tree-container');
+                container.innerHTML = '<svg id="svg-layer"></svg>';
+
+                // ... (Ruler generation code same as before) ...
+                const ruler = document.getElementById('generation-ruler');
+                if (ruler) {
+                    ruler.innerHTML = '';
+                    const yToGens = {};
+                    Object.keys(posMap).forEach(id => {
+                        const p = posMap[id];
+                        const node = globalData.find(d => d.node_code === id);
+                        if (node) {
+                            if (!yToGens[p.y]) yToGens[p.y] = new Set();
+                            yToGens[p.y].add(node.generation);
+                        }
+                    });
+                    Object.keys(yToGens).sort((a, b) => a - b).forEach(y => {
+                        const label = document.createElement('div');
+                        label.className = 'ruler-label';
+                        const genText = Array.from(yToGens[y]).sort((a, b) => a - b).map(g => g + '世').join(' / ');
+                        label.innerText = genText;
+                        label.dataset.basey = y;
+                        ruler.appendChild(label);
+                    });
+                }
+
+                let maxX = 0, maxY = 0;
+                Object.keys(posMap).forEach(id => {
+                    // ... (Card placement code same as before) ...
+                    const pos = posMap[id];
+                    const node = globalData.find(d => d.node_code === id);
+                    if (!node) return;
+
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'family-group';
+                    groupDiv.style.left = pos.x + 'px';
+                    groupDiv.style.top = pos.y + 'px';
+
+                    groupDiv.appendChild(createCard(node));
+                    const spouses = spousesMap[id] || [];
+                    spouses.forEach(sp => {
+                        const sym = document.createElement('div'); sym.className = 'marriage-symbol'; sym.innerText = '='; sym.id = `bond-${id}-${sp.node_code}`;
+                        groupDiv.appendChild(sym);
+                        groupDiv.appendChild(createCard(sp));
+                    });
+                    container.appendChild(groupDiv);
+                    if ((pos.x + pos.myGroupWidth) > maxX) maxX = pos.x + pos.myGroupWidth;
+                    if ((pos.y + 120) > maxY) maxY = pos.y + 120;
+                });
+
+                const svgW = Math.max(maxX + 100, window.innerWidth); const svgH = Math.max(maxY + 200, window.innerHeight);
+                container.style.width = svgW + 'px'; container.style.height = svgH + 'px';
+                document.getElementById('svg-layer').setAttribute('width', svgW); document.getElementById('svg-layer').setAttribute('height', svgH);
+                updateTransform();
+                setTimeout(() => { drawLines(); }, 0);
+            } catch (e) {
+                console.error("Render Error:", e);
+            }
+        }
+
+        // ... createCard ...
+
+        function drawLines() {
+            try {
+                const svg = document.getElementById('svg-layer'); const container = document.getElementById('tree-container');
+                const containerRect = container.getBoundingClientRect(); const scale = panState.scale;
+
+                // Get line color from CSS variable
+                const computedStyle = getComputedStyle(document.body);
+                const pathColor = computedStyle.getPropertyValue('--line-color').trim() || "#999";
+
+                function getCenter(elemId) {
+                    // ... (same logic)
+                    const el = document.getElementById(elemId); if (!el) return null;
+                    const rect = el.getBoundingClientRect();
+                    const x = (rect.left + rect.width / 2 - containerRect.left) / scale; const y = (rect.top + rect.height / 2 - containerRect.top) / scale;
+                    const bottom = (rect.bottom - containerRect.top) / scale; const top = (rect.top - containerRect.top) / scale;
+                    return { x, y, bottom, top };
+                }
+
+                // ... (grouping logic) ...
+                // 1. 子供を「接続元(親 or 婚姻ボンド)」ごとにグループ化
+                const groups = {};
+                globalData.forEach(child => {
+                    if (!child.relations.is_spouse && child.relations.father_id) {
+                        const fatherNode = globalData.find(d => d.node_code === child.relations.father_id);
+                        if (fatherNode && fatherNode.collapsed) return;
+                        if (!document.getElementById(`node-${child.node_code}`)) return;
+                        let sourceId = `bond-${child.relations.father_id}-${child.relations.mother_id}`;
+                        if (!document.getElementById(sourceId)) {
+                            sourceId = `node-${child.relations.father_id}`;
+                        }
+                        if (!groups[sourceId]) groups[sourceId] = [];
+                        groups[sourceId].push(child);
+                    }
+                });
+
+                // ... (drawing logic) ...
+                Object.keys(groups).forEach(sourceId => {
+                    const children = groups[sourceId];
+                    if (children.length === 0) return;
+                    const sourcePos = getCenter(sourceId);
+                    let startPoint = null;
+                    if (sourcePos) startPoint = { x: sourcePos.x, y: sourcePos.bottom };
+                    if (!startPoint) return;
+
+                    let firstChildTop = null;
+                    const childPoints = [];
+                    children.forEach(child => {
+                        const childPos = getCenter(`node-${child.node_code}`);
+                        if (childPos) {
+                            if (firstChildTop === null) firstChildTop = childPos.top;
+                            childPoints.push({ child, pos: childPos });
+                        }
+                    });
+
+                    if (childPoints.length === 0) return;
+                    const startX = startPoint.x;
+                    const startY = startPoint.y;
+                    const endY = firstChildTop;
+                    const midY = (startY + endY) / 2;
+                    const strokeWidth = 2; // Can also be variable if needed
+
+                    // Draw A (Vertical from Parent)
+                    const vLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    vLine.setAttribute('x1', startX); vLine.setAttribute('y1', startY);
+                    vLine.setAttribute('x2', startX); vLine.setAttribute('y2', midY);
+                    vLine.setAttribute('stroke', pathColor); vLine.setAttribute('stroke-width', strokeWidth);
+                    svg.appendChild(vLine);
+
+                    // Draw B (Lines to Children)
+                    childPoints.forEach(pt => {
+                        const cx = pt.pos.x;
+                        const cy = pt.pos.top;
+
+                        const hLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        hLine.setAttribute('x1', startX); hLine.setAttribute('y1', midY);
+                        hLine.setAttribute('x2', cx); hLine.setAttribute('y2', midY);
+                        hLine.setAttribute('stroke', pathColor); hLine.setAttribute('stroke-width', strokeWidth);
+                        svg.appendChild(hLine);
+
+                        const vLineChild = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        vLineChild.setAttribute('x1', cx); vLineChild.setAttribute('y1', midY);
+                        vLineChild.setAttribute('x2', cx); vLineChild.setAttribute('y2', cy);
+                        vLineChild.setAttribute('stroke', pathColor); vLineChild.setAttribute('stroke-width', strokeWidth);
+                        svg.appendChild(vLineChild);
+                    });
+                });
+
+            } catch (e) {
+                console.error("Line Draw Error:", e);
+            }
+        }
+
+        function createCard(data) {
+            const div = document.createElement('div');
+            div.className = `node-card sex-${data.display.sex}`;
+            if (selectedNodeIds.has(data.node_code)) div.classList.add('selected');
+            div.id = `node-${data.node_code}`;
+            initDragEvents(div, data.node_code);
+
+            // ミニカード (義父母) - カード上部に配置
+            const father = globalData.find(d => d.node_code === data.relations.father_id);
+            const mother = globalData.find(d => d.node_code === data.relations.mother_id);
+            const showFather = father && data.relations.father_id && data.relations.father_id.endsWith('_fa');
+            const showMother = mother && data.relations.mother_id && data.relations.mother_id.endsWith('_mo');
+
+            if (showFather || showMother) {
+                const inlawsDiv = document.createElement('div'); inlawsDiv.className = 'node-inlaws';
+                if (showFather) {
+                    const span = document.createElement('span'); span.className = 'inlaw-link'; span.innerText = father.display.name;
+                    span.onclick = (e) => { e.stopPropagation(); openModal(father.node_code); };
+                    inlawsDiv.appendChild(document.createTextNode("父: ")); inlawsDiv.appendChild(span); inlawsDiv.appendChild(document.createTextNode(" "));
+                }
+                if (showMother) {
+                    const span = document.createElement('span'); span.className = 'inlaw-link'; span.innerText = mother.display.name;
+                    span.onclick = (e) => { e.stopPropagation(); openModal(mother.node_code); };
+                    inlawsDiv.appendChild(document.createTextNode("母: ")); inlawsDiv.appendChild(span);
+                }
+                div.appendChild(inlawsDiv);
+            }
+
+            let label = "";
+            if (!data.relations.is_spouse) {
+                const rawOrder = data.relations.birth_order;
+
+                // 男女別順位の計算
+                // 同じ父(または母)を持ち、かつ配偶者でなく、かつ同じ性別の兄弟を取得
+                const sameSexSiblings = globalData.filter(d =>
+                    d.relations.father_id === data.relations.father_id &&
+                    !d.relations.is_spouse &&
+                    d.display.sex === data.display.sex
+                );
+                // birth_order順にソート
+                sameSexSiblings.sort((a, b) => (a.relations.birth_order || 0) - (b.relations.birth_order || 0));
+
+                // 自分のインデックスを探す (1-based index)
+                const rank = sameSexSiblings.findIndex(d => d.node_code === data.node_code) + 1;
+
+                // rankが取得できなかった場合(ありえないが)はrawOrderを使うフォールバック
+                const intOrder = Math.floor(rank > 0 ? rank : rawOrder);
+
+                let suffixNum;
+                if (intOrder === 1) suffixNum = "長";
+                else if (intOrder === 2) suffixNum = "次";
+                else {
+                    // 3以降は漢数字変換
+                    const kanjiNums = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十"];
+                    if (intOrder <= 10) suffixNum = kanjiNums[intOrder];
+                    else if (intOrder < 20) suffixNum = "十" + kanjiNums[intOrder % 10];
+                    else suffixNum = intOrder; // 20以上はあきらめて数字(レアケース)
+                }
+
+                if (rawOrder % 1 !== 0) suffixNum += "'";
+                const gender = (data.display.sex === "male") ? "男" : "女";
+                if (rawOrder) label = `<span class="order-label">${suffixNum}${gender}</span>`;
+            } else { const mOrder = data.relations.marriage_order; if (mOrder) label = `<span class="order-label">妻${mOrder}</span>`; }
+
+            const mainInfo = document.createElement('div');
+            const isVertical = document.body.classList.contains('vertical-mode');
+
+            let dateHtml = '';
+            const bYear = data.display.birth_year || '?';
+            const dYear = data.display.death_year || '?'; // 没年不明も?にする
+
+            let displayName = data.display.name;
+            if (isVertical) {
+                // 縦書き時は半角カッコを全角カッコに置換して縦表示に見せる
+                displayName = displayName.replace(/\(/g, '（').replace(/\)/g, '）');
+            }
+
+            if (isVertical) {
+                dateHtml = `<div class="dates vertical-dates">
+            <div>${bYear}</div>
+            <div class="date-sep">│</div>
+            <div>${dYear}</div>
+        </div>`;
+            } else {
+                dateHtml = `<div class="dates">${bYear} - ${dYear}</div>`;
+            }
+
+            mainInfo.innerHTML = `${label}<div class="name-main">${displayName}</div>${dateHtml}`;
+
+            // v28: メモ1表示
+            if (data.display.memo1) {
+                const memoDiv = document.createElement('div');
+                memoDiv.className = 'memo-text';
+                memoDiv.innerText = data.display.memo1;
+                mainInfo.appendChild(memoDiv);
+            }
+
+            div.appendChild(mainInfo);
+
+            // 折りたたみボタン
+            const hasChildren = globalData.some(d => d.relations.father_id === data.node_code && !d.relations.is_spouse);
+            if (!data.relations.is_spouse && hasChildren) {
+                const btn = document.createElement('div');
+                btn.className = 'collapse-btn' + (data.collapsed ? ' is-collapsed' : '');
+                btn.innerHTML = data.collapsed ? '+' : '−';
+                btn.onclick = (e) => { e.stopPropagation(); toggleCollapse(data.node_code); };
+                div.appendChild(btn);
+            }
+
+            div.onclick = (e) => handleNodeClick(e, data.node_code);
+            return div;
+        }
+
+        function createMiniCard(data, label) {
+            const el = document.createElement('div'); el.className = `mini-card sex-${data.display.sex}`;
+            el.innerHTML = `<div>${label}: ${data.display.name}</div><div class="mini-connector"></div>`;
+            el.onclick = (e) => { e.stopPropagation(); openModal(data.node_code); };
+            return el;
+        }
+
+        function drawLines() {
+            try {
+                const svg = document.getElementById('svg-layer'); const container = document.getElementById('tree-container');
+                const containerRect = container.getBoundingClientRect(); const scale = panState.scale;
+                function getCenter(elemId) {
+                    const el = document.getElementById(elemId); if (!el) return null;
+                    const rect = el.getBoundingClientRect();
+                    const x = (rect.left + rect.width / 2 - containerRect.left) / scale; const y = (rect.top + rect.height / 2 - containerRect.top) / scale;
+                    const bottom = (rect.bottom - containerRect.top) / scale; const top = (rect.top - containerRect.top) / scale;
+                    return { x, y, bottom, top };
+                }
+
+                // 1. 子供を「接続元(親 or 婚姻ボンド)」ごとにグループ化
+                const groups = {}; // key: sourceId, value: [childNode, ...]
+
+                globalData.forEach(child => {
+                    if (!child.relations.is_spouse && child.relations.father_id) {
+                        // 親が非表示(折りたたみ)の場合は線を描画しない
+                        const fatherNode = globalData.find(d => d.node_code === child.relations.father_id);
+                        if (fatherNode && fatherNode.collapsed) return;
+                        // 自身が非表示の場合も描画しない
+                        if (!document.getElementById(`node-${child.node_code}`)) return;
+
+                        // 接続元IDを決定
+                        let sourceId = `bond-${child.relations.father_id}-${child.relations.mother_id}`; // デフォルトは夫婦絆
+                        // 夫婦絆が存在しない(片親のみetc)場合
+                        if (!document.getElementById(sourceId)) {
+                            sourceId = `node-${child.relations.father_id}`;
+                        }
+
+                        if (!groups[sourceId]) groups[sourceId] = [];
+                        groups[sourceId].push(child);
+                    }
+                });
+
+                // 2. グループごとに一括描画 (midYを統一するため)
+                Object.keys(groups).forEach(sourceId => {
+                    const children = groups[sourceId];
+                    if (children.length === 0) return;
+
+                    // 接続元の座標取得
+                    const sourcePos = getCenter(sourceId);
+                    let startPoint = null;
+                    if (sourcePos) {
+                        // 絆(＝)ならbottom、親ノードならbottom
+                        startPoint = { x: sourcePos.x, y: sourcePos.bottom };
+                    }
+
+                    if (!startPoint) return;
+
+                    // 全子供の座標を取得し、endY (子供の上端) の平均または代表値を取る
+                    // ※通常は同じ世代の子供は同じ高さにあるはずだが、ズレ防止のため統一する
+                    let firstChildTop = null;
+                    const childPoints = [];
+
+                    children.forEach(child => {
+                        const childPos = getCenter(`node-${child.node_code}`);
+                        if (childPos) {
+                            if (firstChildTop === null) firstChildTop = childPos.top;
+                            childPoints.push({ child, pos: childPos });
+                        }
+                    });
+
+                    if (childPoints.length === 0) return;
+
+                    // 共通の水平線の高さ (midY) を計算
+                    // startY(親の下端) と firstChildTop(子供の上端) の中間
+                    const startX = startPoint.x;
+                    const startY = startPoint.y;
+                    const endY = firstChildTop;
+
+                    let midY = (startY + endY) / 2;
+                    if (document.body.classList.contains('vertical-mode')) {
+                        // 縦書き時は横線を下に寄せる (70%位置)
+                        midY = startY + (endY - startY) * 0.7;
+                    }
+
+                    // --- 描画実行 ---
+
+                    // A. 親からmidYまでの垂直線
+                    // 色: 親の性別ではなく、デフォルト黒 or 特定色
+                    // ここではシンプルに黒(#333) or グレー(#ccc)
+                    const pathColor = "#999";
+                    const strokeWidth = 2;
+
+                    // 親 -> 中間
+                    const vLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    vLine.setAttribute('x1', startX); vLine.setAttribute('y1', startY);
+                    vLine.setAttribute('x2', startX); vLine.setAttribute('y2', midY);
+                    vLine.setAttribute('stroke', pathColor); vLine.setAttribute('stroke-width', strokeWidth);
+                    svg.appendChild(vLine);
+
+                    // B. 子供ごとの線 (midYから子供へ)
+                    childPoints.forEach(pt => {
+                        const cx = pt.pos.x;
+                        const cy = pt.pos.top;
+
+                        // 水平線部分: startX (親の直下) から cx (子供の直上) まで @ midY
+                        // ※実際は1本の長い横線ではなく、親の直下から各子供への「L字」の集まりとして描く、または
+                        //   一番左の子～一番右の子まで1本の横線を引き、そこから各子へ垂らす。
+                        //   ここでは「親直下から各子へ」の個別ルートだと重なるが問題ない。
+                        //   見た目をきれいにするなら、 Min(cx) ～ Max(cx) の横線を1本引くほうが良い。
+
+                        // 横線 (親のX ～ 子のX)
+                        const hLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        hLine.setAttribute('x1', startX); hLine.setAttribute('y1', midY);
+                        hLine.setAttribute('x2', cx); hLine.setAttribute('y2', midY);
+                        hLine.setAttribute('stroke', pathColor); hLine.setAttribute('stroke-width', strokeWidth);
+                        svg.appendChild(hLine);
+
+                        // 垂直線 (midY ～ 子の上端)
+                        const vLineChild = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                        vLineChild.setAttribute('x1', cx); vLineChild.setAttribute('y1', midY);
+                        vLineChild.setAttribute('x2', cx); vLineChild.setAttribute('y2', cy);
+                        vLineChild.setAttribute('stroke', pathColor); vLineChild.setAttribute('stroke-width', strokeWidth);
+                        svg.appendChild(vLineChild);
+                    });
+                });
+            } catch (e) {
+                console.error("Line Draw Error:", e);
+            }
+        }
+
+        // --- DnD (v10 Style) ---
+        function initDragEvents(el, id) {
+            el.draggable = true;
+            el.addEventListener('dragstart', (e) => {
+                e.stopPropagation(); dragSourceId = id; el.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move';
+            });
+            el.addEventListener('dragend', (e) => { el.classList.remove('dragging'); document.querySelectorAll('.drag-target').forEach(el => el.classList.remove('drag-target')); dragSourceId = null; });
+            el.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; if (dragSourceId && dragSourceId !== id) el.classList.add('drag-target'); });
+            el.addEventListener('dragleave', (e) => { el.classList.remove('drag-target'); });
+            el.addEventListener('drop', (e) => { e.preventDefault(); e.stopPropagation(); el.classList.remove('drag-target'); if (dragSourceId && dragSourceId !== id) handleDrop(dragSourceId, id); });
+        }
+        function handleDrop(sourceId, targetId) {
+            // 現在の複数選択ノードを特定
+            let nodesToMove = Array.from(selectedNodeIds);
+            if (!nodesToMove.includes(sourceId)) {
+                nodesToMove = [sourceId];
+            }
+
+            // 循環参照チェック
+            for (const id of nodesToMove) {
+                if (isDescendant(id, targetId)) {
+                    alert(`エラー: 「${nodesToMove.length > 1 ? '選択中のノードのいずれか' : 'このノード'}」は子孫の下には移動できません`);
+                    return;
+                }
+            }
+
+            pendingDropSourceId = sourceId; // 起点ID
+            pendingDropTargetId = targetId;
+            pendingMoveIds = nodesToMove; // 実際に動かす全ID
+
+            const targetNode = globalData.find(d => d.node_code === targetId);
+            const msg = nodesToMove.length > 1
+                ? `選択中の ${nodesToMove.length} 名を\n「${targetNode.display.name}」へ移動しますか？`
+                : `「${globalData.find(d => d.node_code === sourceId).display.name}」を\n「${targetNode.display.name}」へ移動しますか？`;
+
+            document.getElementById('drop-msg').innerText = msg;
+            document.getElementById('drop-confirm-modal').style.display = 'block';
+        }
+        function cancelDrop() { document.getElementById('drop-confirm-modal').style.display = 'none'; pendingDropSourceId = null; }
+        let pendingMoveIds = [];
+        function confirmDrop(action) {
+            saveHistory();
+            try {
+                // IDが変わる可能性があるため、先にオブジェクトの参照を取得しておく
+                const nodes = pendingMoveIds.map(id => globalData.find(d => d.node_code === id)).filter(n => n);
+
+                if (nodes.length === 0) {
+                    throw new Error("移動対象のノードが見つかりません。");
+                }
+
+                nodes.forEach(source => {
+                    if (action === 'child') moveNodeToParent(source, pendingDropTargetId);
+                    else if (action === 'spouse') makeSpouse(source, pendingDropTargetId);
+                });
+
+                // Clear selection after move
+                selectedNodeIds.clear();
+
+                // モーダルを即座に閉じる
+                cancelDrop();
+
+                // 重い処理を遅延させてUIブロックを防ぐ
+                setTimeout(() => {
+                    try {
+                        renderTree();
+                        saveHistory();
+                        showNotification(`${nodes.length} 名を移動しました`);
+                    } catch (e) {
+                        console.error(e);
+                        alert("描画中にエラーが発生しました: " + e.message);
+                    }
+                }, 10);
+
+            } catch (e) {
+                console.error(e);
+                alert("移動処理中にエラーが発生しました: " + e.message);
+                cancelDrop();
+            }
+        }
+        function makeSpouse(source, targetId) {
+            const target = globalData.find(d => d.node_code === targetId);
+            const targetSpouses = globalData.filter(d => d.relations.is_spouse && d.relations.spouse_linked_to === targetId);
+            const nextOrder = targetSpouses.length + 1;
+            source.generation = target.generation;
+            source.relations.is_spouse = true; source.relations.spouse_linked_to = targetId; source.relations.marriage_order = nextOrder; source.relations.father_id = null; source.relations.mother_id = null; source.relations.birth_order = null;
+            const newId = `${targetId}=${nextOrder}`;
+            if (newId !== source.node_code) { const oldId = source.node_code; source.node_code = newId; cascadeIdChange(oldId, newId); }
+        }
+        function moveNodeToParent(source, newParentId) {
+            const newParent = globalData.find(d => d.node_code === newParentId);
+            let newFatherId = null, newMotherId = null;
+            if (newParent.relations.is_spouse) { newMotherId = newParent.node_code; newFatherId = newParent.relations.spouse_linked_to; }
+            else {
+                if (newParent.display.sex === 'male') {
+                    newFatherId = newParent.node_code;
+                    const spouses = globalData.filter(d => d.relations.is_spouse && d.relations.spouse_linked_to === newParentId).sort((a, b) => (a.relations.marriage_order || 0) - (b.relations.marriage_order || 0));
+                    if (spouses.length > 0) newMotherId = spouses[0].node_code;
+                } else {
+                    const spouses = globalData.filter(d => d.relations.is_spouse && d.relations.spouse_linked_to === newParentId);
+                    if (spouses.length > 0) { newMotherId = newParent.node_code; newFatherId = spouses[0].node_code; } else { newMotherId = newParent.node_code; }
+                }
+            }
+            if (!newFatherId && !newMotherId) newFatherId = newParent.node_code;
+            if (newFatherId && !newMotherId && newParent.display.sex === 'female' && newParent.node_code !== newFatherId) newMotherId = newParent.node_code;
+
+            // ★修正: 父が変わらない場合は順序を維持する
+            const isFatherUnchanged = (source.relations.father_id === newFatherId && newFatherId !== null);
+            let nextOrder;
+            if (isFatherUnchanged) {
+                nextOrder = source.relations.birth_order;
+            } else {
+                const targetChildren = globalData.filter(d => d.relations.father_id === newFatherId && !d.relations.is_spouse);
+                nextOrder = targetChildren.length > 0 ? Math.max(...targetChildren.map(c => Math.floor(c.relations.birth_order || 0))) + 1 : 1;
+            }
+
+            source.generation = newParent.generation + 1;
+            source.relations.father_id = newFatherId; source.relations.mother_id = newMotherId; source.relations.is_spouse = false; source.relations.spouse_linked_to = null; source.relations.birth_order = nextOrder;
+            const newId = generateIdByOrder(newFatherId, source.generation, source.display.sex, nextOrder);
+            if (newId !== source.node_code) { const oldId = source.node_code; source.node_code = newId; cascadeIdChange(oldId, newId); }
+        }
+
+        // 親選択(クリック)
+        function startSelectParentMode() { moveSourceId = selectedNodeId; closeModal(); isSelectingParent = true; document.body.classList.add('selecting-parent'); document.getElementById('mode-indicator').style.display = 'block'; window.addEventListener('keydown', handleEscKey); }
+        function handleEscKey(e) { if (e.key === 'Escape') cancelParentSelect(); }
+        function cancelParentSelect() { isSelectingParent = false; moveSourceId = null; document.body.classList.remove('selecting-parent'); document.getElementById('mode-indicator').style.display = 'none'; window.removeEventListener('keydown', handleEscKey); }
+        function handleNodeClick(e, nodeId) {
+            if (panState.isDragging) return; e.stopPropagation();
+            if (isSelectingParent) {
+                if (moveSourceId === nodeId || isDescendant(moveSourceId, nodeId)) { alert("移動できません"); return; }
+                const s = globalData.find(d => d.node_code === moveSourceId); const t = globalData.find(d => d.node_code === nodeId);
+                if (confirm(`「${s.display.name}」を\n「${t.display.name}」の子供にしますか？`)) { saveHistory(); moveNodeToParent(s, nodeId); saveHistory(); renderTree(); showNotification("移動しました"); }
+                cancelParentSelect();
+            } else {
+                if (e.shiftKey) {
+                    if (selectedNodeIds.has(nodeId)) selectedNodeIds.delete(nodeId);
+                    else selectedNodeIds.add(nodeId);
+                } else {
+                    selectedNodeIds.clear();
+                    selectedNodeIds.add(nodeId);
+                }
+                renderTree();
+                // 編集用の単一選択IDも更新（モーダル用）
+                selectedNodeId = nodeId;
+                // ダブルクリック的な感覚で1つだけ選んだ場合にモーダルを開く
+                if (!e.shiftKey) openModal(nodeId);
+            }
+        }
+
+        // 編集・削除
+        function openModal(nodeId) {
+            selectedNodeId = nodeId;
+            selectedNodeIds.clear();
+            selectedNodeIds.add(nodeId);
+            renderTree();
+            document.getElementById('modal-overlay').style.display = 'block';
+            const node = globalData.find(d => d.node_code === nodeId);
+            const leftArea = document.getElementById('modal-left-actions');
+            const isInlaw = nodeId.endsWith('_fa') || nodeId.endsWith('_mo');
+
+            let leftHtml = `<button class="btn-danger" onclick="deleteNode('${nodeId}')">🗑️ 削除</button>`;
+            if (!node.relations.is_spouse && !isInlaw) {
+                leftHtml = `<button class="btn-action" onclick="startSelectParentMode()">🔄 親を変更</button><button onclick="setRootToSelected()">🌳 家系表示</button>` + leftHtml;
+            }
+
+            if (!isInlaw) {
+                leftHtml = `<div style="width:100%; margin-bottom:5px; font-size:11px; color:#666">親追加:</div><button onclick="addParent('father')">＋父</button><button onclick="addParent('mother')">＋母</button><hr style="width:100%; border:0; border-top:1px solid #eee; margin:10px 0;">` + leftHtml;
+            }
+            leftArea.innerHTML = leftHtml;
+
+            // モード切り替えボタンの制御
+            ['child', 'spouse'].forEach(m => {
+                const btn = document.getElementById(`btn-mode-${m}`);
+                if (btn) btn.style.display = isInlaw ? 'none' : 'inline-block';
+            });
+
+            setMode('edit');
+        }
+        function closeModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
+            // 編集終了時に選択状態を解除
+            selectedNodeIds.clear();
+            renderTree();
+        }
+        function setMode(mode) { currentMode = mode;['child', 'spouse', 'edit'].forEach(m => { const btn = document.getElementById(`btn-mode-${m}`); if (m === mode) btn.classList.add('active-mode'); else btn.classList.remove('active-mode'); }); document.getElementById('modal-left-actions').style.visibility = (mode === 'edit') ? 'visible' : 'hidden'; renderForm(); }
+        function toggleVerticalMode() {
+            document.body.classList.toggle('vertical-mode');
+            renderTree(); // 線を引き直すために必要
+        }
+        function deleteNode(targetId) {
+            const id = targetId || selectedNodeId;
+            if (!id) return;
+            // 確認ダイアログを一時的に無効化する場合はこちら
+            if (!confirm(`削除しますか？`)) return;
+
+            saveHistory();
+            globalData = globalData.filter(d => d.node_code !== id);
+            globalData.forEach(d => {
+                if (d.relations.father_id === id) d.relations.father_id = null;
+                if (d.relations.mother_id === id) d.relations.mother_id = null;
+                if (d.relations.spouse_linked_to === id) d.relations.spouse_linked_to = null;
+            });
+
+            saveHistory();
+            closeModal();
+            selectedNodeId = null;
+            selectedNodeIds.clear();
+            renderTree();
+            showNotification("削除しました");
+        }
+
+        // --- ID整理機能 ---
+        function setRootToSelected() { currentRootId = selectedNodeId; closeModal(); renderTree(); resetView(); showNotification("家系表示"); }
+        function resetRoot() { currentRootId = null; renderTree(); showNotification("全員表示"); }
+
+        // 親追加
+        function addParent(type) {
+            saveHistory();
+            const child = globalData.find(d => d.node_code === selectedNodeId);
+            if (type === 'father' && child.relations.father_id) { alert("父は既に設定されています"); return; }
+            if (type === 'mother' && child.relations.mother_id) { alert("母は既に設定されています"); return; }
+            const suffix = (type === 'father') ? "_fa" : "_mo"; const sex = (type === 'father') ? "male" : "female";
+            const newId = child.node_code + suffix;
+            const parentNode = {
+                node_code: newId,
+                generation: child.generation - 1,
+                relations: { father_id: null, mother_id: null, relation_type: 'biological', is_spouse: false, spouse_linked_to: null, birth_order: 1 },
+                display: {
+                    name: (type === 'father' ? "父" : "母"),
+                    sex: sex,
+                    birth_year: null, birth_era_type: "", birth_era_name: "", birth_era_year: "", birth_month: "", birth_day: "",
+                    death_year: null, death_era_type: "", death_era_name: "", death_era_year: "", death_month: "", death_day: "",
+                    zi: "", hao: "", memo1: ""
+                },
+                collapsed: false
+            };
+            globalData.push(parentNode);
+            if (type === 'father') child.relations.father_id = newId; else child.relations.mother_id = newId;
+            saveHistory(); closeModal(); renderTree(); showNotification("親を追加しました");
+        }
+
+        // フォーム生成 (v13ベース) - HTMLエスケープ対応
+        function escapeHtml(unsafe) {
+            if (unsafe === null || unsafe === undefined) return "";
+            return String(unsafe)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        function createInput(id, label, value, type = "text") { return `<div class="form-group"><label>${label}</label><input id="input-${id}" type="${type}" value="${escapeHtml(value)}"></div>`; }
+        function createTextarea(id, label, value) { return `<div class="form-group"><label>${label}</label><textarea id="input-${id}" style="width:100%; height:80px; resize:vertical; border:1px solid #ccc; border-radius:4px; padding:5px; font-family:inherit;">${escapeHtml(value)}</textarea></div>`; }
+        function createSelect(id, label, value, options) { let html = `<div class="form-group"><label>${label}</label><select id="input-${id}">`; options.forEach(o => { const selected = (o.val === value) ? "selected" : ""; html += `<option value="${escapeHtml(o.val)}" ${selected}>${escapeHtml(o.label)}</option>`; }); html += `</select></div>`; return html; }
+        function createEraSelector(p, tOv, selName, cY, wY, month, day) {
+            let html = `
+            <div class="form-section">
+                <div class="form-section-title">${p === "birth" ? "生" : "没"}年月日</div>
+                <div class="form-row">
+                    <div class="form-group" style="flex:1"><label>時代</label>
+                        <select id="input-${p}_era_type" onchange="updateEraNames('${p}')">
+                            <option value="">(選択)</option>
+                            <option value="qing" ${tOv === 'qing' ? 'selected' : ''}>清朝</option>
+                            <option value="japan" ${tOv === 'japan' ? 'selected' : ''}>日本</option>
+                            <option value="roc" ${tOv === 'roc' ? 'selected' : ''}>民国</option>
+                            <option value="west" ${tOv === 'west' ? 'selected' : ''}>西暦</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:1"><label>元号</label><select id="input-${p}_era_name" onchange="calcWestYear('${p}')"></select></div>
+                    <div class="form-group" style="flex:0.5"><label>年</label>
+                        <input type="number" id="input-${p}_era_year" value="${cY || ''}" oninput="calcWestYear('${p}')">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex:1">
+                        <label>西暦</label><input type="number" id="input-${p}_year" value="${wY || ''}" style="background:#f9f9f9" readonly>
+                    </div>
+                    <div class="form-group" style="flex:0.8">
+                        <label>月</label><input type="number" id="input-${p}_month" value="${month || ''}" min="1" max="12">
+                    </div>
+                    <div class="form-group" style="flex:0.8">
+                        <label>日</label><input type="number" id="input-${p}_day" value="${day || ''}" min="1" max="31">
+                    </div>
+                </div>
+            </div>`;
+            setTimeout(() => updateEraNames(p, tOv, selName), 0);
+            return html;
+        }
+        window.updateEraNames = function (p, tOv = null, selName = null) { const typeEl = document.getElementById(`input-${p}_era_type`); if (!typeEl) return; const type = tOv || typeEl.value; const nameEl = document.getElementById(`input-${p}_era_name`); nameEl.innerHTML = ""; if (!type || type === 'west') { nameEl.disabled = true; return; } nameEl.disabled = false; ERA_DATA[type].eras.forEach(e => { const opt = document.createElement('option'); opt.value = e.name.split(" ")[0]; opt.dataset.start = e.start; opt.dataset.is_minus = e.is_minus || false; opt.innerText = e.name; if (selName && e.name.startsWith(selName)) opt.selected = true; nameEl.appendChild(opt); }); calcWestYear(p); };
+        window.calcWestYear = function (p) { const typeEl = document.getElementById(`input-${p}_era_type`); if (!typeEl) return; const type = typeEl.value; const nameEl = document.getElementById(`input-${p}_era_name`); const valYear = parseInt(document.getElementById(`input-${p}_era_year`).value); const out = document.getElementById(`input-${p}_year`); if (type === 'west' || !type || !valYear) return; const opt = nameEl.options[nameEl.selectedIndex]; if (!opt) return; const start = parseInt(opt.dataset.start); const isMinus = (opt.dataset.is_minus === "true"); out.value = isMinus ? (start - valYear) : (start + valYear - 1); };
+
+        function renderForm() {
+            const node = globalData.find(d => d.node_code === selectedNodeId); let html = '';
+            const idDisplay = `<div style="margin-bottom:15px; padding:8px; background:#f0f0f0; border-radius:4px; font-size:11px; color:#666;"><strong>ID:</strong> ${node.node_code} (編集不可)</div>`;
+
+            if (currentMode === 'edit') {
+                html += idDisplay;
+                html += `<div class="form-section"><div class="form-section-title">基本情報</div><div class="form-row">` + createInput("name", "氏名", node.display.name) + createSelect("sex", "性別", node.display.sex, [{ val: 'male', label: '男' }, { val: 'female', label: '女' }]) + `</div>`;
+                if (!node.relations.is_spouse) html += `<div class="form-row">${createInput("birth_order", "順序", node.relations.birth_order, "number")}</div><small style="color:#666">※重複時は自動で '(ダッシュ) が付きます</small>`; else html += `<div class="form-row">${createInput("marriage_order", "婚姻順", node.relations.marriage_order, "number")}</div>`;
+
+                html += `<div class="form-row">${createInput("zi", "字", node.display.zi)}${createInput("hao", "号", node.display.hao)}</div>`;
+                html += `</div>` +
+                    createEraSelector("birth", node.display.birth_era_type, node.display.birth_era_name, node.display.birth_era_year, node.display.birth_year, node.display.birth_month, node.display.birth_day) +
+                    createEraSelector("death", node.display.death_era_type, node.display.death_era_name, node.display.death_era_year, node.display.death_year, node.display.death_month, node.display.death_day) +
+                    `<div class="form-section"><div class="form-section-title">メモ</div>` +
+                    createTextarea("memo1", "メモ1 (カードに表示)", node.display.memo1) +
+                    createTextarea("memo2", "メモ2 (非公開)", node.display.memo2) +
+                    `</div>`;
+            }
+            else if (currentMode === 'child') {
+                const spouses = globalData.filter(d => d.relations.is_spouse && d.relations.spouse_linked_to === selectedNodeId); const children = globalData.filter(d => d.relations.father_id === selectedNodeId && !d.relations.is_spouse); const nextOrder = children.length > 0 ? Math.max(...children.map(c => Math.floor(c.relations.birth_order || 0))) + 1 : 1;
+                html += `<p><strong>${node.display.name}</strong> の子供を追加</p>`; if (spouses.length > 0) { let opts = [{ val: "", label: "不明/指定なし" }]; spouses.forEach(s => opts.push({ val: s.node_code, label: s.display.name })); html += createSelect("partner_id", "母親", "", opts); }
+                html += `<div class="form-section"><div class="form-row">${createInput("name", "氏名", "")}${createSelect("sex", "性別", "male", [{ val: 'male', label: '男' }, { val: 'female', label: '女' }])}</div><div class="form-row">${createInput("birth_order", "順序", nextOrder, "number")}${createSelect("relation_type", "関係", "biological", [{ val: 'biological', label: '実子' }, { val: 'adopted', label: '養子' }])}</div></div>` + createEraSelector("birth", "japan", "明治", "", "", "", "") + createEraSelector("death", "", "", "", "", "", "");
+            }
+            else if (currentMode === 'spouse') { const spouses = globalData.filter(d => d.relations.is_spouse && d.relations.spouse_linked_to === selectedNodeId); const nextOrder = spouses.length + 1; const defaultSex = (node.display.sex === 'male') ? 'female' : 'male'; html += `<p><strong>${node.display.name}</strong> の配偶者を追加</p><div class="form-section"><div class="form-row">${createInput("name", "氏名", "")}${createSelect("sex", "性別", defaultSex, [{ val: 'male', label: '男' }, { val: 'female', label: '女' }])}${createInput("marriage_order", "婚姻順", nextOrder, "number")}</div></div>` + createEraSelector("birth", "", "", "", "", "", "") + createEraSelector("death", "", "", "", "", "", ""); }
+            document.getElementById('form-content').innerHTML = html;
+        }
+        function saveChanges() {
+            saveHistory();
+            try {
+                const val = (id) => { const el = document.getElementById(`input-${id}`); return el ? el.value : ""; };
+                const getDates = (p) => ({
+                    y: val(`${p}_year`),
+                    type: val(`${p}_era_type`),
+                    name: val(`${p}_era_name`),
+                    eY: val(`${p}_era_year`),
+                    m: val(`${p}_month`),
+                    d: val(`${p}_day`)
+                });
+                const bd = getDates("birth"); const dd = getDates("death");
+
+                if (currentMode === 'edit') {
+                    const node = globalData.find(d => d.node_code === selectedNodeId);
+                    if (!node) throw new Error("編集対象のノードが見つかりません");
+
+                    node.display.name = val('name');
+                    node.display.sex = val('sex');
+                    node.display.zi = val('zi');
+                    node.display.hao = val('hao');
+                    node.display.memo1 = val('memo1');
+                    node.display.memo2 = val('memo2');
+                    node.display.birth_year = bd.y;
+                    node.display.birth_era_type = bd.type;
+                    node.display.birth_era_name = bd.name;
+                    node.display.birth_era_year = bd.eY;
+                    node.display.birth_month = bd.m;
+                    node.display.birth_day = bd.d;
+                    node.display.death_year = dd.y;
+                    node.display.death_era_type = dd.type;
+                    node.display.death_era_name = dd.name;
+                    node.display.death_era_year = dd.eY;
+                    node.display.death_month = dd.m;
+                    node.display.death_day = dd.d;
+
+                    if (!node.relations.is_spouse && !selectedNodeId.endsWith('_fa') && !selectedNodeId.endsWith('_mo')) {
+                        const rawOrder = val('birth_order');
+                        let newOrder = parseFloat(rawOrder);
+                        if (isNaN(newOrder)) newOrder = node.relations.birth_order || 1;
+
+                        const siblings = globalData.filter(d => d.relations.father_id === node.relations.father_id && !d.relations.is_spouse && d.node_code !== node.node_code);
+                        const conflict = siblings.find(s => s.relations.birth_order === newOrder);
+                        if (conflict) {
+                            conflict.relations.birth_order += 0.5;
+                            const shiftId = generateIdByOrder(conflict.relations.father_id, conflict.generation, conflict.display.sex, conflict.relations.birth_order);
+                            const oldShiftId = conflict.node_code;
+                            conflict.node_code = shiftId;
+                            cascadeIdChange(oldShiftId, shiftId);
+                        }
+                        node.relations.birth_order = newOrder;
+                        const newId = generateIdByOrder(node.relations.father_id, node.generation, node.display.sex, newOrder);
+                        if (newId && newId !== node.node_code) {
+                            const oldId = node.node_code; node.node_code = newId; cascadeIdChange(oldId, newId);
+                        }
+                    } else if (node.relations.is_spouse) {
+                        let mOrder = parseInt(val('marriage_order'));
+                        if (isNaN(mOrder)) mOrder = node.relations.marriage_order || 1;
+                        node.relations.marriage_order = mOrder;
+                    }
+                } else if (currentMode === 'child') {
+                    const parent = globalData.find(d => d.node_code === selectedNodeId);
+                    let order = parseFloat(val('birth_order'));
+                    if (isNaN(order)) order = 1;
+                    const sex = val('sex');
+                    const siblings = globalData.filter(d => d.relations.father_id === selectedNodeId && !d.relations.is_spouse);
+                    const conflict = siblings.find(s => s.relations.birth_order === order);
+                    if (conflict) { conflict.relations.birth_order += 0.5; const shiftId = generateIdByOrder(conflict.relations.father_id, conflict.generation, conflict.display.sex, conflict.relations.birth_order); const oldShiftId = conflict.node_code; conflict.node_code = shiftId; cascadeIdChange(oldShiftId, shiftId); }
+                    const newId = generateIdByOrder(selectedNodeId, parent.generation + 1, sex, order);
+                    globalData.push({
+                        node_code: newId,
+                        generation: parent.generation + 1,
+                        relations: { father_id: selectedNodeId, mother_id: val('partner_id') || null, relation_type: val('relation_type'), birth_order: order, is_spouse: false },
+                        display: {
+                            name: val('name'), sex: sex, zi: "", hao: "", memo1: "",
+                            birth_year: bd.y, birth_era_type: bd.type, birth_era_name: bd.name, birth_era_year: bd.eY, birth_month: bd.m, birth_day: bd.d,
+                            death_year: dd.y, death_era_type: dd.type, death_era_name: dd.name, death_era_year: dd.eY, death_month: dd.m, death_day: dd.d
+                        },
+                        collapsed: false
+                    });
+                } else if (currentMode === 'spouse') {
+                    const parent = globalData.find(d => d.node_code === selectedNodeId);
+                    let order = parseInt(val('marriage_order'));
+                    if (isNaN(order)) order = 1;
+                    const newId = `${selectedNodeId}=${order}`;
+                    globalData.push({
+                        node_code: newId,
+                        generation: parent.generation,
+                        relations: { is_spouse: true, spouse_linked_to: selectedNodeId, marriage_order: order, father_id: null, mother_id: null },
+                        display: {
+                            name: val('name'), sex: val('sex'), zi: "", hao: "", memo1: "",
+                            birth_year: bd.y, birth_era_type: bd.type, birth_era_name: bd.name, birth_era_year: bd.eY, birth_month: bd.m, birth_day: bd.d,
+                            death_year: dd.y, death_era_type: dd.type, death_era_name: dd.name, death_era_year: dd.eY, death_month: dd.m, death_day: dd.d
+                        },
+                        collapsed: false
+                    });
+                }
+                showNotification("保存しました");
+            } catch (e) {
+                console.error(e);
+                alert("保存中にエラーが発生しました: " + e.message);
+            } finally {
+                closeModal();
+                renderTree();
+            }
+        }
+
+        // 共通機能 (省略なし)
+        function isDescendant(ancestorId, potentialDescendantId) {
+            if (ancestorId === potentialDescendantId) return true;
+            const node = globalData.find(d => d.node_code === potentialDescendantId); if (!node) return false;
+            if (node.relations.father_id === ancestorId || node.relations.mother_id === ancestorId) return true;
+            if (node.relations.father_id && isDescendant(ancestorId, node.relations.father_id)) return true;
+            if (node.relations.mother_id && isDescendant(ancestorId, node.relations.mother_id)) return true;
+            return false;
+        }
+        function cascadeIdChange(oldId, newId) {
+            if (!oldId || !newId || oldId === newId) return;
+            globalData.forEach(d => {
+                if (d.relations.father_id === oldId) { d.relations.father_id = newId; if (!d.relations.is_spouse) { const newChildId = generateIdByOrder(newId, d.generation, d.display.sex, d.relations.birth_order); if (d.node_code !== newChildId) { const o = d.node_code; d.node_code = newChildId; cascadeIdChange(o, newChildId); } } }
+                if (d.relations.mother_id === oldId) d.relations.mother_id = newId;
+                if (d.relations.spouse_linked_to === oldId) { d.relations.spouse_linked_to = newId; const newSpouseId = `${newId}=${d.relations.marriage_order}`; if (d.node_code !== newSpouseId) { const o = d.node_code; d.node_code = newSpouseId; cascadeIdChange(o, newSpouseId); } }
+            });
+        }
+        function generateIdByOrder(parentId, generation, sex, order) {
+            if (!parentId) return null;
+            const match = parentId ? parentId.match(/^([A-Za-z0-9]+)-(\d+)$/) : null; let baseCode = match ? match[1] : parentId;
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; const intOrder = Math.floor(order);
+            let charIndex = (intOrder - 1) % 26; let suffix = letters[charIndex];
+            if (intOrder > 26) suffix += letters[(intOrder - 1) % 26];
+            if (sex === 'female') suffix = suffix.toLowerCase();
+            if (order % 1 !== 0) suffix += "_dup";
+            return `${baseCode}${suffix}-${generation}`;
+        }
+        function getDisplayData() {
+            if (!currentRootId) {
+                // 全員表示モードでも折りたたみを考慮
+                const visibleIds = new Set();
+                function collect(id) {
+                    if (visibleIds.has(id)) return;
+                    visibleIds.add(id);
+                    const node = globalData.find(d => d.node_code === id);
+                    if (node && !node.collapsed) {
+                        globalData.filter(d => d.relations.father_id === id).forEach(c => collect(c.node_code));
+                    }
+                    globalData.filter(d => d.relations.is_spouse && d.relations.spouse_linked_to === id).forEach(s => visibleIds.add(s.node_code));
+                }
+                // ルート（親なし）から開始
+                globalData.filter(d => !d.relations.father_id && !d.relations.is_spouse && !d.node_code.endsWith('_fa') && !d.node_code.endsWith('_mo')).forEach(r => collect(r.node_code));
+                return globalData.filter(d => visibleIds.has(d.node_code) && !d.node_code.endsWith('_fa') && !d.node_code.endsWith('_mo'));
+            }
+            const res = new Set(); const st = [currentRootId];
+            while (st.length) {
+                const id = st.pop(); if (res.has(id)) continue; res.add(id);
+                const node = globalData.find(d => d.node_code === id);
+                if (node && !node.collapsed) {
+                    globalData.filter(d => d.relations.father_id === id || d.relations.mother_id === id).forEach(c => st.push(c.node_code));
+                }
+                globalData.filter(d => d.relations.is_spouse && d.relations.spouse_linked_to === id).forEach(s => res.add(s.node_code));
+            }
+            return globalData.filter(d => res.has(d.node_code) && !d.node_code.endsWith('_fa') && !d.node_code.endsWith('_mo'));
+        }
+        // --- ID整理機能 ---
+        function renovateIDs() {
+            // 確認ダイアログを一時的に無効化
+            // if (!confirm("IDを振り直しますか？\n（現在のルートを起点に全てのIDが再生成されます。）")) return;
+            saveHistory();
+
+            // ルート特定
+            let root = null;
+            if (currentRootId) root = globalData.find(d => d.node_code === currentRootId);
+            if (!root) root = globalData.find(d => !d.relations.father_id && !d.relations.is_spouse && !d.node_code.endsWith('_fa') && !d.node_code.endsWith('_mo'));
+            if (!root) { alert("ルートが見つかりません"); return; }
+
+            const idMap = {}; // old -> new
+            const queue = [];
+
+            // ルート設定
+            const rootOldId = root.node_code;
+            const rootNewId = 'A-1';
+            idMap[rootOldId] = rootNewId;
+
+            // BFS用キュー: { oldId, newId, generation }
+            queue.push({ oldId: rootOldId, newId: rootNewId, generation: 1 });
+
+            // 訪問済み(oldId)
+            const visited = new Set();
+            visited.add(rootOldId);
+
+            // ★親(父母)も一緒にリネームするヘルパー
+            function processAttachedParents(targetOldId, targetNewId) {
+                const targetNode = globalData.find(d => d.node_code === targetOldId);
+                if (!targetNode) return;
+
+                ['father', 'mother'].forEach(type => {
+                    const pid = (type === 'father') ? targetNode.relations.father_id : targetNode.relations.mother_id;
+                    if (pid) {
+                        // 既にIDマップにあるか、またはvisitedならスキップ
+                        if (idMap[pid]) return;
+
+                        // そのIDが実在するか
+                        const parentNode = globalData.find(d => d.node_code === pid);
+                        if (!parentNode) return;
+
+                        // suffix判定: 通常は _fa / _mo
+                        // 既存IDが _fa / _mo で終わっているかチェックしてもよいが、
+                        // シンプルに type に合わせて付与する (addParentの実装に合わせる)
+                        const suffix = (type === 'father') ? '_fa' : '_mo';
+                        const newPid = targetNewId + suffix;
+
+                        idMap[pid] = newPid;
+                        visited.add(pid);
+                    }
+                });
+            }
+
+            while (queue.length > 0) {
+                const { oldId: pOldId, newId: pNewId, generation: pGen } = queue.shift();
+
+                // 0. 自分自身の親(直系の親ではなく設定された_fa/_moなど)を処理
+                processAttachedParents(pOldId, pNewId);
+
+                // 1. 配偶者を探してマップに追加
+                // spouse_linked_to === pOldId
+                const spouses = globalData.filter(d => d.relations.is_spouse && d.relations.spouse_linked_to === pOldId);
+                // marriage_order順に
+                spouses.sort((a, b) => (a.relations.marriage_order || 0) - (b.relations.marriage_order || 0));
+
+                spouses.forEach(sp => {
+                    const spNewId = `${pNewId}=${sp.relations.marriage_order || 1}`;
+                    idMap[sp.node_code] = spNewId;
+                    visited.add(sp.node_code);
+
+                    // ★配偶者の親（義父母）も処理
+                    processAttachedParents(sp.node_code, spNewId);
+                });
+
+                // 2. 子供を探してマップに追加
+                // father_id === pOldId
+                const children = globalData.filter(d => !d.relations.is_spouse && d.relations.father_id === pOldId);
+                // birth_order順に
+                children.sort((a, b) => (a.relations.birth_order || 0) - (b.relations.birth_order || 0));
+
+                children.forEach((child, index) => {
+                    // ID生成
+                    const order = index + 1;
+                    const nextGen = pGen + 1;
+
+                    const match = pNewId.match(/^([A-Za-z0-9]+)-(\d+)$/);
+                    const baseCode = match ? match[1] : pNewId;
+
+                    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                    let charIndex = (order - 1) % 26;
+                    let suffix = letters[charIndex];
+                    if (order > 26) suffix += letters[(order - 1) % 26];
+                    if (child.display.sex === 'female') suffix = suffix.toLowerCase();
+
+                    const newChildId = `${baseCode}${suffix}-${nextGen}`;
+
+                    idMap[child.node_code] = newChildId;
+                    visited.add(child.node_code);
+
+                    queue.push({ oldId: child.node_code, newId: newChildId, generation: nextGen });
+                });
+            }
+
+            // 一括置換適用
+            globalData.forEach(d => {
+                const oldId = d.node_code;
+
+                // 参照の更新
+                if (d.relations.father_id && idMap[d.relations.father_id]) {
+                    d.relations.father_id = idMap[d.relations.father_id];
+                }
+                if (d.relations.mother_id && idMap[d.relations.mother_id]) {
+                    d.relations.mother_id = idMap[d.relations.mother_id];
+                }
+                if (d.relations.spouse_linked_to && idMap[d.relations.spouse_linked_to]) {
+                    d.relations.spouse_linked_to = idMap[d.relations.spouse_linked_to];
+                }
+
+                // 自分自身のID更新
+                if (idMap[oldId]) {
+                    d.node_code = idMap[oldId];
+                    const parts = idMap[oldId].split('-');
+                    if (parts.length > 1) {
+                        const g = parseInt(parts[parts.length - 1]);
+                        if (!isNaN(g)) d.generation = g;
+                    }
+                }
+            });
+
+            // 選択状態のクリア
+            selectedNodeId = null;
+            selectedNodeIds.clear();
+
+            // ルートIDの更新
+            if (currentRootId && idMap[currentRootId]) {
+                currentRootId = idMap[currentRootId];
+            } else if (root) {
+                currentRootId = rootNewId;
+            }
+
+            renderTree();
+            showNotification(`IDを振り直しました (対象: ${Object.keys(idMap).length}件)`);
+        }
+        async function exportToImage() {
+            showNotification("画像を生成中...");
+            await performExport('image');
+        }
+
+        async function exportToPDF() {
+            showNotification("PDFを生成中...");
+            await performExport('pdf');
+        }
+
+        // 共通エクスポート処理 (全体 -> 分割)
+        async function performExport(format) {
+            // 状態保存
+            const savedSelection = new Set(selectedNodeIds);
+            const savedCollapsedState = new Map();
+            globalData.forEach(d => savedCollapsedState.set(d.node_code, d.collapsed));
+            const savedPanState = JSON.parse(JSON.stringify(panState));
+
+            selectedNodeIds.clear();
+
+            // PanStateリセット
+            panState = { scale: 1, x: 0, y: 0, isDragging: false, startX: 0, startY: 0 };
+
+            // 描画実行
+            renderTree();
+            document.body.classList.add('exporting');
+
+            // ビューポート設定
+            const viewport = document.getElementById("viewport");
+            const originalJustify = viewport.style.justifyContent;
+            const originalAlign = viewport.style.alignItems;
+            viewport.style.justifyContent = "flex-start";
+            viewport.style.alignItems = "flex-start";
+
+            // 背景色 & サイズ固定
+            const contentLayer = document.getElementById("content-layer");
+            contentLayer.style.backgroundColor = "#ffffff";
+            contentLayer.style.boxShadow = "none";
+            contentLayer.style.minWidth = "0";
+            contentLayer.style.minHeight = "0";
+            contentLayer.style.width = "auto";
+            contentLayer.style.height = "auto";
+
+            // 描画安定待ち
+            await new Promise(r => setTimeout(r, 500));
+
+            // サイズ計測
+            const treeContainer = document.getElementById("tree-container");
+            const treesW = treeContainer.offsetWidth;
+            const treesH = treeContainer.offsetHeight;
+            const finalW = treesW + 100;
+            const finalH = treesH + 100;
+
+            contentLayer.style.width = finalW + "px";
+            contentLayer.style.height = finalH + "px";
+
+            const CANVAS_LIMIT = 30000;
+            const startScale = 1;
+            const isTooBigForCanvas = (finalW * startScale > CANVAS_LIMIT || finalH * startScale > CANVAS_LIMIT);
+
+            // Canvas生成ヘルパー
+            const tryRender = async (scale) => {
+                return await html2canvas(contentLayer, {
+                    scale: scale,
+                    backgroundColor: "#ffffff",
+                    windowWidth: finalW,
+                    windowHeight: finalH,
+                    width: finalW,
+                    height: finalH,
+                    scrollX: 0, scrollY: 0, x: 0, y: 0,
+                    logging: false,
+                    useCORS: true
+                });
+            };
+
+            // ★修正: ダウンロードヘルパーをPromise化してawaitできるようにする
+            const downloadCanvas = (canvas, filenameBase) => {
+                return new Promise((resolve, reject) => {
+                    try {
+                        if (format === 'image') {
+                            canvas.toBlob((blob) => {
+                                if (!blob) { reject("Blob failed"); return; }
+                                const url = URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.download = `${filenameBase}.png`;
+                                link.href = url;
+                                link.click();
+                                setTimeout(() => { URL.revokeObjectURL(url); resolve(); }, 1000); // 少し待つ
+                            }, 'image/png');
+                        } else {
+                            // PDF
+                            const { jsPDF } = window.jspdf;
+                            const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [canvas.width * 0.75, canvas.height * 0.75] });
+                            try {
+                                pdf.addImage(canvas, 'PNG', 0, 0, canvas.width * 0.75, canvas.height * 0.75);
+                            } catch (e) {
+                                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, canvas.width * 0.75, canvas.height * 0.75);
+                            }
+                            pdf.save(`${filenameBase}.pdf`);
+                            setTimeout(resolve, 500);
+                        }
+                    } catch (e) {
+                        console.error("Download Error", e);
+                        reject(e);
+                    }
+                });
+            };
+
+            let canvas = null;
+            let errorOccurred = false;
+
+            try {
+                if (isTooBigForCanvas) {
+                    console.warn(`Size too big for single canvas: ${finalW}x${finalH} (x${startScale})`);
+                    throw new Error("Size limit exceeded (pre-check)");
+                }
+
+                try {
+                    canvas = await tryRender(startScale);
+                } catch (e) {
+                    console.warn(`Export failed at scale ${startScale}`, e);
+                    throw e;
+                }
+
+                if (canvas) {
+                    await downloadCanvas(canvas, 'family_tree'); // await追加
+                    showNotification("保存しました");
+                } else {
+                    throw new Error("Canvas is null");
+                }
+
+            } catch (error) {
+                console.error("Full Export Failed:", error);
+                errorOccurred = true;
+            } finally {
+                // 復元
+                viewport.style.justifyContent = originalJustify;
+                viewport.style.alignItems = originalAlign;
+                contentLayer.style.backgroundColor = "";
+                contentLayer.style.boxShadow = "";
+                contentLayer.style.minWidth = ""; contentLayer.style.minHeight = "";
+                contentLayer.style.width = ""; contentLayer.style.height = "";
+
+                document.body.classList.remove('exporting');
+                savedSelection.forEach(id => selectedNodeIds.add(id));
+
+                globalData.forEach(d => {
+                    const state = savedCollapsedState.get(d.node_code);
+                    if (state !== undefined) d.collapsed = state;
+                });
+
+                panState = savedPanState;
+
+                setTimeout(async () => {
+                    renderTree();
+
+                    if (errorOccurred) {
+                        await new Promise(r => setTimeout(r, 100)); // 少し待ってからConfirm
+                        if (confirm("全体出力がサイズ制限によりできませんでした。\n「分割出力（家系ごとの個別出力）」を行いますか？")) {
+                            await exportSmartSplit(format, tryRender, downloadCanvas, CANVAS_LIMIT);
+                        }
+                    }
+                }, 100);
+            }
+        }
+
+        // スマート分割出力 (再帰的・強化版)
+        async function exportSmartSplit(format, renderFn, downloadFn, canvasLimit) {
+            showNotification("分割出力を開始します...");
+
+            // 状態保存
+            const savedSelection = new Set(selectedNodeIds);
+            const savedCollapsedState = new Map();
+            globalData.forEach(d => savedCollapsedState.set(d.node_code, d.collapsed));
+            const savedPanState = JSON.parse(JSON.stringify(panState));
+            const viewport = document.getElementById("viewport");
+            const originalJustify = viewport.style.justifyContent;
+            const originalAlign = viewport.style.alignItems;
+            const contentLayer = document.getElementById("content-layer");
+
+            selectedNodeIds.clear();
+
+            // PanStateリセット
+            panState = { scale: 1, x: 0, y: 0, isDragging: false, startX: 0, startY: 0 };
+
+            document.body.classList.add('exporting');
+            viewport.style.justifyContent = "flex-start";
+            viewport.style.alignItems = "flex-start";
+
+            let exportCount = 0;
+
+            try {
+                let rootNode = null;
+                if (currentRootId) rootNode = globalData.find(d => d.node_code === currentRootId);
+                if (!rootNode) rootNode = globalData.find(d => !d.relations.father_id && !d.relations.is_spouse && !d.node_code.endsWith('_fa') && !d.node_code.endsWith('_mo'));
+
+                if (!rootNode) { alert("ルートが見つかりません"); return; }
+
+                const splitScale = 1;
+
+                const processNode = async (targetNode) => {
+                    const children = globalData.filter(d => !d.relations.is_spouse && d.relations.father_id === targetNode.node_code);
+                    children.sort((a, b) => (a.relations.birth_order || 0) - (b.relations.birth_order || 0));
+
+                    // 子供がいない場合（末端）は、このループには入らない -> 呼び出し元が処理すべきだが、
+                    // processNodeは「targetNodeの子供たちをエクスポートする」関数として定義されている。
+                    // なので、childrenが0なら何もしないのは正しい。
+                    // 問題は「targetNode自体がデカすぎてprocessNode(targetNode)が呼ばれたが、子供がいない」ケース。
+
+                    if (children.length === 0) return;
+
+                    for (let i = 0; i < children.length; i++) {
+                        const child = children[i];
+
+                        // 表示切り替え
+                        setBranchVisibility(child.node_code);
+                        renderTree();
+
+                        contentLayer.style.backgroundColor = "#ffffff";
+                        contentLayer.style.minWidth = "0";
+                        contentLayer.style.minHeight = "0";
+                        contentLayer.style.width = "auto";
+                        contentLayer.style.height = "auto";
+
+                        await new Promise(r => setTimeout(r, 300)); // 安定待ち
+
+                        const treeContainer = document.getElementById("tree-container");
+                        const finalW = treeContainer.offsetWidth + 100;
+                        const finalH = treeContainer.offsetHeight + 100;
+
+                        contentLayer.style.width = finalW + "px";
+                        contentLayer.style.height = finalH + "px";
+
+                        // ★修正: サイズチェック
+                        const canExport = (finalW * splitScale < canvasLimit && finalH * splitScale < canvasLimit);
+                        // ★修正: もしこれ以上ドリルダウンできない（子供がいない）なら、サイズオーバーでも強制出力するしかない
+                        const grandChildren = globalData.filter(d => !d.relations.is_spouse && d.relations.father_id === child.node_code);
+                        const isLeafBranch = (grandChildren.length === 0);
+
+                        if (canExport || isLeafBranch) {
+                            if (!canExport) console.warn("Exporting oversized branch because it is a leaf:", child.display.name);
+
+                            const filename = `FamilyTree_${formatName(child.display.name)}`;
+                            showNotification(`${child.display.name} 家を出力中...`);
+                            try {
+                                const canvas = await html2canvas(contentLayer, {
+                                    scale: splitScale,
+                                    backgroundColor: "#ffffff",
+                                    windowWidth: finalW,
+                                    windowHeight: finalH,
+                                    width: finalW,
+                                    height: finalH,
+                                    scrollX: 0, scrollY: 0, x: 0, y: 0,
+                                    logging: false,
+                                    useCORS: true
+                                });
+                                await downloadFn(canvas, filename); // await追加
+                                exportCount++;
+                                await new Promise(r => setTimeout(r, 1500)); // ブラウザのダウンロード制限回避のためにウェイト
+                            } catch (e) {
+                                console.error(`Failed to export ${child.display.name}`, e);
+                                // 失敗したらドリルダウン試行
+                                await processNode(child);
+                            }
+                        } else {
+                            console.log(`${child.display.name} is too big, drilling down...`);
+                            await processNode(child);
+                        }
+                    }
+                };
+
+                await processNode(rootNode);
+                showNotification(`分割出力完了: ${exportCount}ファイルを保存しました`);
+
+            } catch (e) {
+                console.error("Smart Split Error:", e);
+                alert("分割出力エラー: " + e.message);
+            } finally {
+                // 復元
+                const contentLayer = document.getElementById("content-layer");
+                panState = savedPanState;
+                selectedNodeIds.clear();
+                savedSelection.forEach(id => selectedNodeIds.add(id));
+                globalData.forEach(d => {
+                    const state = savedCollapsedState.get(d.node_code);
+                    if (state !== undefined) d.collapsed = state;
+                });
+
+                document.body.classList.remove('exporting');
+                viewport.style.justifyContent = originalJustify;
+                viewport.style.alignItems = originalAlign;
+
+                contentLayer.style.backgroundColor = "";
+                contentLayer.style.boxShadow = "";
+                contentLayer.style.minWidth = "";
+                contentLayer.style.minHeight = "";
+                contentLayer.style.width = "";
+                contentLayer.style.height = "";
+
+                setTimeout(() => renderTree(), 100);
+            }
+        }
+
+        // SVG出力
+        async function exportToSVG() {
+            showNotification("SVGデータを生成中...");
+
+            // 1. 準備：レンダリング状態を整える（他と同じロジック）
+            const savedSelection = new Set(selectedNodeIds);
+            const savedPanState = JSON.parse(JSON.stringify(panState));
+            const savedCollapsedState = new Map();
+            globalData.forEach(d => savedCollapsedState.set(d.node_code, d.collapsed));
+
+            selectedNodeIds.clear();
+            panState = { scale: 1, x: 0, y: 0, isDragging: false, startX: 0, startY: 0 };
+            renderTree();
+
+            document.body.classList.add('exporting');
+            const viewport = document.getElementById("viewport");
+            const originalJustify = viewport.style.justifyContent;
+            const originalAlign = viewport.style.alignItems;
+            viewport.style.justifyContent = "flex-start";
+            viewport.style.alignItems = "flex-start";
+
+            const contentLayer = document.getElementById("content-layer");
+            contentLayer.style.backgroundColor = "#ffffff";
+            contentLayer.style.boxShadow = "none";
+            contentLayer.style.minWidth = "0"; contentLayer.style.minHeight = "0";
+            contentLayer.style.width = "auto"; contentLayer.style.height = "auto";
+
+            // 安定待ち
+            await new Promise(r => setTimeout(r, 500));
+
+            try {
+                const treeContainer = document.getElementById("tree-container");
+                const width = treeContainer.offsetWidth + 100; // padding
+                const height = treeContainer.offsetHeight + 100;
+
+                // 2. スタイルシートの抽出
+                let cssText = "";
+                for (const sheet of document.styleSheets) {
+                    try {
+                        // 同一オリジンのCSSのみアクセス可能
+                        if (sheet.cssRules) {
+                            for (const rule of sheet.cssRules) {
+                                cssText += rule.cssText + "\n";
+                            }
+                        }
+                    } catch (e) {
+                        console.warn("Cannot access stylesheet rules: ", e);
+                    }
+                }
+                // 特定のスタイル調整
+                cssText += `
+                    #content-layer { transform: none !important; left: 0 !important; top: 0 !important; margin: 50px; }
+                    .card { box-shadow: none; border: 1px solid #000; }
+                `;
+
+                // 3. 画像のBase64化
+                // クローンを作成して操作する
+                const clone = contentLayer.cloneNode(true);
+                clone.style.width = width + "px";
+                clone.style.height = height + "px";
+
+                // SVG内のimgタグはDataURLでないと表示されないことが多い
+                const images = clone.getElementsByTagName("img");
+                const originalImages = contentLayer.getElementsByTagName("img");
+
+                for (let i = 0; i < images.length; i++) {
+                    const img = images[i];
+                    const original = originalImages[i];
+                    if (original && original.complete) {
+                        // Canvasを使ってBase64化
+                        try {
+                            const canvas = document.createElement("canvas");
+                            canvas.width = original.naturalWidth;
+                            canvas.height = original.naturalHeight;
+                            const ctx = canvas.getContext("2d");
+                            ctx.drawImage(original, 0, 0);
+                            img.src = canvas.toDataURL("image/png");
+                        } catch (e) {
+                            console.warn("Image conversion failed", e);
+                        }
+                    }
+                }
+
+                // 4. XMLシリアライズ
+                const serializer = new XMLSerializer();
+                const domString = serializer.serializeToString(clone);
+
+                // 5. SVG作成 (<foreignObject>使用)
+                const svgString = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+                        <style>
+                            ${cssText}
+                        </style>
+                        <foreignObject width="100%" height="100%">
+                            <div xmlns="http://www.w3.org/1999/xhtml">
+                                ${domString}
+                            </div>
+                        </foreignObject>
+                    </svg>
+                `;
+
+                // 6. ダウンロード
+                const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.download = "family_tree.svg";
+                link.href = url;
+                link.click();
+
+                showNotification("SVGを保存しました");
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+            } catch (e) {
+                console.error("SVG Export Error:", e);
+                alert("SVG出力エラー: " + e.message);
+            } finally {
+                // 復元
+                viewport.style.justifyContent = originalJustify;
+                viewport.style.alignItems = originalAlign;
+                contentLayer.style.backgroundColor = "";
+                contentLayer.style.boxShadow = "";
+                contentLayer.style.minWidth = ""; contentLayer.style.minHeight = "";
+                contentLayer.style.width = ""; contentLayer.style.height = "";
+                document.body.classList.remove('exporting');
+                savedSelection.forEach(id => selectedNodeIds.add(id));
+                globalData.forEach(d => {
+                    const state = savedCollapsedState.get(d.node_code);
+                    if (state !== undefined) d.collapsed = state;
+                });
+                panState = savedPanState;
+                setTimeout(() => renderTree(), 100);
+            }
+        }
+
+        // タイル分割出力 (座標ベース)
+        async function exportTiled(format) {
+            showNotification("タイル分割出力を開始します...");
+
+            // 1. 準備 (他と同じ)
+            const savedSelection = new Set(selectedNodeIds);
+            const savedPanState = JSON.parse(JSON.stringify(panState));
+            const savedCollapsedState = new Map();
+            globalData.forEach(d => savedCollapsedState.set(d.node_code, d.collapsed));
+
+            selectedNodeIds.clear();
+            panState = { scale: 1, x: 0, y: 0, isDragging: false, startX: 0, startY: 0 };
+            renderTree();
+
+            document.body.classList.add('exporting');
+            const viewport = document.getElementById("viewport");
+            const originalJustify = viewport.style.justifyContent;
+            const originalAlign = viewport.style.alignItems;
+            viewport.style.justifyContent = "flex-start";
+            viewport.style.alignItems = "flex-start";
+
+            const contentLayer = document.getElementById("content-layer");
+            contentLayer.style.backgroundColor = "#ffffff";
+            contentLayer.style.boxShadow = "none";
+            contentLayer.style.minWidth = "0"; contentLayer.style.minHeight = "0";
+            contentLayer.style.width = "auto"; contentLayer.style.height = "auto";
+
+            await new Promise(r => setTimeout(r, 500));
+
+            try {
+                const treeContainer = document.getElementById("tree-container");
+                const finalW = treeContainer.offsetWidth + 100;
+                const finalH = treeContainer.offsetHeight + 100;
+                contentLayer.style.width = finalW + "px";
+                contentLayer.style.height = finalH + "px";
+
+                // 設定: タイル幅 (A3横想定で約3000px程度、あるいは見やすさ重視で大きく)
+                // 3500px程度にする（オーバーラップ含む）
+                const TILE_WIDTH = 3500;
+                const OVERLAP = 50;
+
+                let pdf = null;
+                if (format === 'pdf') {
+                    const { jsPDF } = window.jspdf;
+                    // 初期化 (orientationはページごとに追加時に指定する手もあるが、ここでは横長統一)
+                    pdf = new jsPDF({ orientation: 'landscape', unit: 'pt' });
+                }
+
+                let pageCount = 0;
+                // 左から順にキャプチャ
+                for (let x = 0; x < finalW; x += (TILE_WIDTH - OVERLAP)) {
+                    pageCount++;
+                    const isLast = (x + TILE_WIDTH) >= finalW;
+                    const currentW = Math.min(TILE_WIDTH, finalW - x);
+
+                    // html2canvasで座標指定キャプチャ
+                    // windowWidth/windowHeightをfinalサイズに指定し、
+                    // x, width で切り抜く
+                    showNotification(`ページ ${pageCount} を生成中...`);
+
+                    const canvas = await html2canvas(contentLayer, {
+                        scale: 1,
+                        backgroundColor: "#ffffff",
+                        windowWidth: finalW,
+                        windowHeight: finalH,
+                        width: currentW,
+                        height: finalH,
+                        x: x,
+                        y: 0,
+                        scrollX: 0, scrollY: 0, // これが重要
+                        logging: false,
+                        useCORS: true
+                    });
+
+                    if (format === 'image') {
+                        // 画像として即保存
+                        const filename = `family_tree_part${pageCount}.png`;
+                        canvas.toBlob((blob) => {
+                            if (!blob) return;
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.download = filename;
+                            link.href = url;
+                            link.click();
+                            setTimeout(() => URL.revokeObjectURL(url), 1000);
+                        }, 'image/png');
+                        await new Promise(r => setTimeout(r, 1000)); // ダウンロード待機
+                    } else {
+                        // PDFに追加
+                        const imgData = canvas.toDataURL('image/png');
+                        // PDFページサイズを画像サイズに合わせる (pt換算: 1px = 0.75pt)
+                        const pdfW = currentW * 0.75;
+                        const pdfH = finalH * 0.75;
+
+                        if (pageCount > 1) pdf.addPage([pdfW, pdfH], 'landscape');
+                        else pdf.deletePage(1), pdf.addPage([pdfW, pdfH], 'landscape'); // 初期ページ削除して追加 (サイズ合わせ)
+
+                        pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+                    }
+                }
+
+                if (format === 'pdf' && pdf) {
+                    showNotification("PDFを保存中...");
+                    pdf.save("family_tree_tiled.pdf");
+                }
+
+                showNotification("完了しました");
+
+            } catch (e) {
+                console.error("Tiled Export Error:", e);
+                alert("分割出力エラー: " + e.message);
+            } finally {
+                // 復元
+                viewport.style.justifyContent = originalJustify;
+                viewport.style.alignItems = originalAlign;
+                contentLayer.style.backgroundColor = "";
+                contentLayer.style.boxShadow = "";
+                contentLayer.style.minWidth = ""; contentLayer.style.minHeight = "";
+                contentLayer.style.width = ""; contentLayer.style.height = "";
+                document.body.classList.remove('exporting');
+                savedSelection.forEach(id => selectedNodeIds.add(id));
+                globalData.forEach(d => {
+                    const state = savedCollapsedState.get(d.node_code);
+                    if (state !== undefined) d.collapsed = state;
+                });
+                panState = savedPanState;
+                setTimeout(() => renderTree(), 100);
+            }
+        }
+        function setBranchVisibility(targetNodeId) {
+            const target = globalData.find(d => d.node_code === targetNodeId);
+            if (!target) return;
+
+            // 1. 親を取得
+            const fatherId = target.relations.father_id;
+            if (!fatherId) return; // ルートの場合は何もしない（あるいは全員表示？）
+
+            // 2. 兄弟を取得（自分含む）
+            const siblings = globalData.filter(d => d.relations.father_id === fatherId && !d.relations.is_spouse);
+
+            // 3. 自分は展開、兄弟は折りたたむ
+            siblings.forEach(s => {
+                if (s.node_code === targetNodeId) {
+                    s.collapsed = false;
+                } else {
+                    s.collapsed = true;
+                }
+            });
+        }
+
+        function formatName(name) {
+            return name.replace(/[\/\?<>\\:\*\|":]/g, '_'); // ファイル名禁止文字除去
+        }
+
+        // 指定したノード(leafId)に到達するまでのパス上のノードと、leafId以下の全ノードを展開する。
+        // パス上のノードの「兄弟」であっても、パスに含まれないものは折りたたむ。
+        function setBranchVisibility(targetId) {
+            // 全てを閉じる（初期化するより、現状から計算したほうが速いが、確実性重視）
+            // ただしルートより上は触らない
+
+            // 1. Ancestor Path を特定
+            const path = new Set();
+            let curr = globalData.find(d => d.node_code === targetId);
+            while (curr) {
+                path.add(curr.node_code);
+                // 配偶者リンクも考慮すべきだが、シンプルに父系/母系を辿る
+                if (curr.relations.father_id) {
+                    curr = globalData.find(d => d.node_code === curr.relations.father_id);
+                } else if (curr.relations.mother_id) {
+                    curr = globalData.find(d => d.node_code === curr.relations.mother_id);
+                } else {
+                    curr = null;
+                }
+            }
+
+            // 2. 全ノードに対して処理
+            globalData.forEach(d => {
+                // targetId の子孫であれば展開する
+                if (isDescendant(targetId, d.node_code) || d.node_code === targetId) {
+                    d.collapsed = false;
+                }
+                // targetId の先祖(path)であれば展開する
+                else if (path.has(d.node_code)) {
+                    d.collapsed = false;
+                }
+                // それ以外（兄弟やその子孫など）は閉じる
+                // ただし、ルートより上の世代や無関係なノードを不用意に閉じると変になるので
+                // 「path上のノードの子供」かつ「pathに含まれないもの」を閉じるのが正解
+                else {
+                    // 親がpathに含まれているか？
+                    const father = d.relations.father_id && path.has(d.relations.father_id);
+                    const mother = d.relations.mother_id && path.has(d.relations.mother_id);
+
+                    if (father || mother) {
+                        d.collapsed = true;
+                    }
+                }
+            });
+        }
+        function exportToExcel() {
+            const rows = globalData.map(d => {
+                const r = d.relations;
+                const disp = d.display;
+                return {
+                    "ID": d.node_code,
+                    "世代": d.generation,
+                    "氏名": disp.name,
+                    "性別": disp.sex === 'male' ? "男" : "女",
+                    "父ID": r.father_id,
+                    "母ID": r.mother_id,
+                    "関係": r.relation_type === 'adopted' ? "養子" : "実子",
+                    "順序": r.birth_order,
+                    "配偶者": r.is_spouse,
+                    "相手ID": r.spouse_linked_to,
+                    "婚姻順": r.marriage_order,
+                    "生年": disp.birth_year,
+                    "生_時代": disp.birth_era_type,
+                    "生_元号名": disp.birth_era_name,
+                    "生_年": disp.birth_era_year,
+                    "生_月": disp.birth_month,
+                    "生_日": disp.birth_day,
+                    "没年": disp.death_year,
+                    "没_時代": disp.death_era_type,
+                    "没_元号名": disp.death_era_name,
+                    "没_年": disp.death_era_year,
+                    "没_月": disp.death_month,
+                    "没_日": disp.death_day,
+                    "字": disp.zi,
+                    "号": disp.hao,
+                    "メモ1": disp.memo1,
+                    "折りたたみ": d.collapsed
+                };
+            });
+            const ws = XLSX.utils.json_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "家系図");
+            XLSX.writeFile(wb, "taiwan_family_tree.xlsx");
+        }
+        document.getElementById('upload-input').addEventListener('change', handleFileSelect, false);
+        function handleFileSelect(evt) { const file = evt.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function (e) { const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, { type: 'array' }); const rawData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]); globalData = processExcelData(rawData); initHistory(); renderTree(); evt.target.value = ''; centerOnRoot(); }; reader.readAsArrayBuffer(file); }
+
+        // ★始祖を中心に表示
+        function centerOnRoot() {
+            let rootCode = currentRootId;
+            if (!rootCode) {
+                const root = globalData.find(d => !d.relations.father_id && !d.relations.is_spouse && !d.node_code.endsWith('_fa') && !d.node_code.endsWith('_mo'));
+                if (root) rootCode = root.node_code;
+            }
+            if (!rootCode) return;
+
+            // DOM描画待ち
+            setTimeout(() => {
+                const el = document.getElementById(`node-${rootCode}`);
+                if (!el) return;
+
+                const rect = el.getBoundingClientRect();
+                const viewW = window.innerWidth;
+                const viewH = window.innerHeight;
+
+                const currentCx = rect.left + rect.width / 2;
+                const currentCy = rect.top + rect.height / 2;
+
+                const targetCx = viewW / 2;
+                const targetCy = viewH / 2;
+
+                const dx = targetCx - currentCx;
+                const dy = targetCy - currentCy;
+
+                panState.x += dx;
+                panState.y += dy;
+
+                updateTransform();
+            }, 50);
+        }
+
+        function processExcelData(rawData) {
+            return rawData.map(row => {
+                const sexMap = { "男": "male", "女": "female", "male": "male", "female": "female" };
+                const relMap = { "養子": "adopted" };
+                let isSpouse = !!row["配偶者"];
+                if (row["配偶者"] === "FALSE") isSpouse = false;
+                return {
+                    node_code: String(row["ID"] || "temp-" + Date.now()),
+                    generation: parseInt(row["世代"]) || 0,
+                    collapsed: !!row["折りたたみ"],
+                    relations: {
+                        father_id: row["父ID"] || null,
+                        mother_id: row["母ID"] || null,
+                        relation_type: relMap[row["関係"]] || "biological",
+                        is_spouse: isSpouse,
+                        spouse_linked_to: row["相手ID"] || null,
+                        marriage_order: parseInt(row["婚姻順"]) || null,
+                        birth_order: parseFloat(row["順序"]) || 1
+                    },
+                    display: {
+                        name: row["氏名"] || "名称未設定",
+                        sex: sexMap[row["性別"]] || "unknown",
+                        birth_year: row["生年"] || null,
+                        birth_era_type: row["生_時代"] || "",
+                        birth_era_name: row["生_元号名"] || "",
+                        birth_era_year: row["生_年"] || "",
+                        birth_month: row["生_月"] || "",
+                        birth_day: row["生_日"] || "",
+                        death_year: row["没年"] || null,
+                        death_era_type: row["没_時代"] || "",
+                        death_era_name: row["没_元号名"] || "",
+                        death_era_year: row["没_年"] || "",
+                        death_month: row["没_月"] || "",
+                        death_day: row["没_日"] || "",
+                        zi: row["字"] || null,
+                        hao: row["号"] || null,
+                        memo1: row["メモ1"] || null,
+                        memo2: row["メモ2"] || null
+                    }
+                };
+            });
+        }
+        function initSampleData() {
+            // Tutorial Data showing multiple features
+            const sample = [
+                // --- 1st Generation ---
+                {
+                    ID: "A-1", 世代: 1, 氏名: "始祖 (操作説明)", 性別: "男",
+                    生_時代: "japan", 生_元号名: "文久", 生_年: 1, 生年: 1861,
+                    没_時代: "japan", 没_元号名: "昭和", 没_年: 10, 没年: 1935,
+                    順序: 1,
+                    メモ1: "カードをクリックして編集",
+                    メモ2: `【ID規則】
+自動生成されますがエクセルデータから手動変更もできます。
+基本: 順序-世代 (例: A-1)
+配偶者: =順序 (例: A-1=1)
+兄弟: ABC… (例: AB-2)
+男女: aBc (小文字:女性、大文字:男性)
+義父母: _fa, _mo (例: A-1=1_fa)
+
+【操作方法】
+・クリック: 編集画面を開く
+・Shift+クリック: 複数選択
+・ドラッグ: ノード移動(親子/配偶者付替)
+・Ctrl+ホイール: 拡大縮小
+・背景ドラッグ: 画面移動
+・+ボタン: 親/子/配偶者の追加
+
+このデータは「再描画」やリロードで復元します。`
+                },
+                { ID: "A-1=1", 世代: 1, 氏名: "妻", 性別: "女", 配偶者: true, 相手ID: "A-1", 婚姻順: 1 },
+
+                // --- 2nd Generation ---
+                {
+                    ID: "AA-2", 世代: 2, 氏名: "長男 (太郎)", 性別: "男", 父ID: "A-1", 順序: 1,
+                    生_時代: "japan", 生_元号名: "明治", 生_年: 20, 生年: 1887,
+                    メモ1: "配偶者と子供あり"
+                },
+                { ID: "AA-2=1", 世代: 2, 氏名: "長男の妻", 性別: "女", 配偶者: true, 相手ID: "AA-2", 婚姻順: 1 },
+
+                {
+                    ID: "Ab-2", 世代: 2, 氏名: "長女 (花子)", 性別: "女", 父ID: "A-1", 順序: 2,
+                    生_時代: "japan", 生_元号名: "明治", 生_年: 25, 生年: 1892
+                },
+                {
+                    ID: "Ab-2=1", 世代: 2, 氏名: "長女の夫", 性別: "男", 配偶者: true, 相手ID: "Ab-2", 婚姻順: 1,
+                    父ID: "Ab-2=1_fa", 母ID: "Ab-2=1_mo" // Linked to in-laws
+                },
+
+                // In-laws (Parents of Daughter's Husband)
+                { ID: "Ab-2=1_fa", 世代: 1, 氏名: "義父", 性別: "男", 没年: 1900 },
+                { ID: "Ab-2=1_mo", 世代: 1, 氏名: "義母", 性別: "女", 没年: 1910 },
+
+                {
+                    ID: "AC-2", 世代: 2, 氏名: "次男 (次郎)", 性別: "男", 父ID: "A-1", 順序: 3,
+                    生_時代: "japan", 生_元号名: "明治", 生_年: 30, 生年: 1897
+                },
+
+                // --- 3rd Generation (Children of Eldest Son) ---
+                {
+                    ID: "AAA-3", 世代: 3, 氏名: "孫息子", 性別: "男", 父ID: "AA-2", 順序: 1,
+                    生_時代: "japan", 生_元号名: "大正", 生_年: 5, 生年: 1916
+                },
+                {
+                    ID: "AAb-3", 世代: 3, 氏名: "孫娘 (養女)", 性別: "女", 父ID: "AA-2", 順序: 2,
+                    関係: "養子", // Special mapping for 'Adopted'
+                    生_時代: "japan", 生_元号名: "大正", 生_年: 8, 生年: 1919
+                }
+            ];
+            globalData = processExcelData(sample);
+            initHistory();
+            renderTree();
+            centerOnRoot();
+        }
+
+        function showNotification(msg) {
+            const el = document.getElementById('notification');
+            el.innerText = msg;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 2000);
+        }
+
+        initSampleData();
+    </script>
+</body>
+
+</html>
